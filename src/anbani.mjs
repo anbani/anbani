@@ -6,6 +6,7 @@ import utils from "./lib/utils.mjs";
 import contractions from "./lib/contractions.mjs";
 import georgianisation from "./lib/georgianisation.mjs";
 import preprocessing from "./lib/preprocessing.mjs";
+import morse from "./lib/morse.mjs";
 
 // Natural-language utilities, mirroring anbani.py's `anbani.nlp` package.
 const nlp = { contractions, georgianisation, preprocessing };
@@ -32,9 +33,9 @@ let ab = {
 
 // Abstract anbani
 const anbani = {
-    core, lorem, toolkit, data, utils, ab, nlp
+    core, lorem, toolkit, data, utils, ab, nlp, morse
 };
 
 
-export {core, lorem, toolkit, data, utils, ab, nlp}
+export {core, lorem, toolkit, data, utils, ab, nlp, morse}
 export default anbani

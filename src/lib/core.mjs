@@ -1,4 +1,5 @@
 import data from "./data.mjs";
+import morse from "./morse.mjs";
 import { checkForAliases, classifyText, checkForDirection, isBicameral, toUpperCase, setCharAt } from "./utils.mjs";
 
 // Bicameral scripts pair an upper-case and a lower-case unicameral script. Mirrors anbani.py BICAMERAL_RULES.
@@ -108,6 +109,12 @@ const convertBicameral = (str, from, to) => {
 }
 
 const safeConvert = (str, from, to) => {
+    if (from === "kartvelian_morse") {
+        const decoded = morse.decode(str);
+        return to === "kartvelian_morse" ? morse.encode(decoded) : safeConvert(decoded, "mkhedruli", to);
+    }
+    if (to === "kartvelian_morse")
+        return morse.encode(from === "mkhedruli" ? str : safeConvert(str, from, "mkhedruli"));
     if (str != null)
         if (!isBicameral(to))
             return convertUnicameral(str, from, to);

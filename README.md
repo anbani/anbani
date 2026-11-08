@@ -46,6 +46,9 @@ anbani
   │  ├─ interpret [Function]
   │  ├─ classify [Function]      // names the source script, or "unknown"
   │  └─ $                        // alias of classify; $.classifyText also works
+  ├─ morse
+  │  ├─ encode / decode [Function]
+  │  └─ layout                   // proposed Kartvelian Morse specification
   ├─ lorem
   │  ├─ sentences [Function]
   │  ├─ paragraphs [Function]
@@ -156,6 +159,66 @@ If you are wondering what Georgian alphabets look like, or what's the difference
 
 
 
+
+## Kartvelian Morse (proposed)
+
+The proposed Kartvelian Morse layout supports Georgian, Mingrelian, Svan, and Laz.
+It is available in Node (ESM and CommonJS) and the browser bundle:
+
+```javascript
+import anbani, { morse } from "anbani";
+
+morse.encode("ანბანი აბგ");
+// '.- -. -... .- -. .. / .- -... --.'
+morse.decode(".- -. -... .- -. .. / .- -... --.");
+// 'ანბანი აბგ'
+
+anbani.core.convert("ანბანი", "mkhedruli", "kartvelian_morse");
+anbani.core.convert(".- -. -... .- -. ..", "kartvelian_morse", "mkhedruli");
+
+morse.encode("ç̌p̌", { profile: "laz_latin" });
+// '--.-. .--..'
+morse.decode("--.-. .--..", { profile: "laz_latin" });
+// 'ç̌p̌'
+```
+
+`morse.encode(text)` preserves exact source text without normalization. Combining
+marks follow their base in source order. Each ASCII space becomes a `/` token,
+including repeated, leading, and trailing spaces; a literal slash uses `-..-.`.
+Other whitespace and characters without direct codes use `-------` followed by
+seven Morse digit tokens encoding the zero-padded decimal Unicode scalar.
+This preserves other Georgian script forms, IPA, emoji, and exact Latin spelling.
+Unpaired surrogates are rejected.
+
+`morse.decode(text)` returns Mkhedruli for direct letter codes, accepts whitespace
+between tokens, and restores escapes verbatim. Empty input returns an empty
+string. Invalid tokens, truncated escapes, and invalid scalar values throw errors
+with one-based token positions. Non-string inputs and unknown profiles throw.
+
+The explicit `laz_latin` profile uses the supplied Lazoğlu–Feurstein,
+Kartvelian.eu 35-letter mapping. Encoding matches longer spellings before single
+letters and accepts canonical decompositions and these aliases: `ç̆ → ç̌`,
+`k̆ → ǩ`, `p̆ → p̌`, `t̆ → ť`, `z̆ → ž`, `ʒ̆ → ǯ`. Decoding returns canonical
+Latin spellings for direct codes. Escaped characters stay verbatim in either
+profile. Uppercase Latin remains escaped. Use the default profile when exact
+Latin spelling must round-trip.
+
+`core.convert` supports `kartvelian_morse` in either direction. Other supported
+source scripts first convert to Mkhedruli; decoding to other targets applies the
+existing Mkhedruli conversion. Use `morse.encode` directly to preserve script
+forms exactly. Morse-to-Morse conversion validates and canonicalizes the stream.
+Morse source detection is explicit: `classify` and `interpret` do not auto-detect it.
+The TUI does not list Morse yet.
+
+```bash
+anbani convert "ანბანი" mkhedruli kartvelian_morse
+anbani convert ".- -. -... .- -. .." kartvelian_morse mkhedruli
+```
+
+`morse.layout` exposes the deeply frozen specification, labeled `proposed`,
+including all mappings and timing units: dot 1, dash 3, within-token gap 1,
+between-token gap 3, and between-word gap 7. Sender and receiver must agree on
+this layout before transmission. Audio generation is not included.
 
 ## Interpretation
 Apart from straightforward conversion, the package also supports interpretation capabilities via `anbani.core.interpret`, which automagically detects the language of the text and converts to desired `to` parameter script.
@@ -345,7 +408,10 @@ Notes:
   nothing.
 
 ## Parity with anbani.py
-anbani.js and [anbani.py](https://github.com/Anbani/anbani.py) share one behavior contract, proved in CI by the byte-identical `spec/golden.json` both test suites run. Feature-equivalent as of 3.0; the only intentional gaps are the browser/UMD bundle (js-only) and `ebook2text` (Python-only).
+anbani.js and [anbani.py](https://github.com/Anbani/anbani.py) share one behavior contract, proved in CI by the byte-identical `spec/golden.json` both test suites run. Feature-equivalent as of 3.0; intentional gaps are the browser/UMD bundle and proposed Kartvelian Morse codec (JS-only), and `ebook2text` (Python-only). Morse tests are separate from the shared parity fixtures.
+
+## 3.5
+- Proposed Kartvelian Morse: exact Unicode encoding and decoding, optional Laz Latin profile, and `kartvelian_morse` conversion source/target. Available through `morse`, the CLI, and browser/CommonJS bundles.
 
 ## 3.4
 Table fixes, each backed by a source in [docs/table-sources.md](docs/table-sources.md).

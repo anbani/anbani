@@ -38,6 +38,7 @@ export const checkForAliases = (dir) => {
 
 export const checkForDirection = (dir) => {
     let permitted_from = [
+        "kartvelian_morse",
         "mkhedruli",
         "asomtavruli",
         "nuskhuri",
@@ -47,6 +48,7 @@ export const checkForDirection = (dir) => {
     ];
     // Every alphabet key is a valid target, plus the four bicameral scripts.
     let permitted_to = [
+        "kartvelian_morse",
         ...Object.keys(data.alphabets),
         "khutsuri",
         "shanidziseuli",
