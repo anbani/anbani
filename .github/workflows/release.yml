@@ -258,7 +258,9 @@ jobs:
 
   prepare:
     needs: [gate, assemble]
-    if: needs.gate.outputs.publication_holds == '[]'
+    if: >-
+      always() && !cancelled() && needs.gate.result == 'success' && needs.assemble.result == 'success' &&
+      needs.gate.outputs.publication_holds == '[]'
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     permissions: {contents: write, checks: read, actions: read}
@@ -1007,7 +1009,9 @@ jobs:
 
   publish-pypi:
     needs: [gate, prepare]
-    if: contains(needs.prepare.outputs.missing_files, '"registry":"pypi"')
+    if: >-
+      always() && !cancelled() && needs.prepare.result == 'success' &&
+      contains(needs.prepare.outputs.missing_files, '"registry":"pypi"')
     runs-on: ubuntu-24.04
     timeout-minutes: 25
     environment: pypi
