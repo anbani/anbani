@@ -227,8 +227,8 @@ jobs:
         with: {node-version: "24"}
       - uses: actions/download-artifact@v7
         with:
-          pattern: source
-          path: ${{ runner.temp }}/inputs
+          name: source
+          path: ${{ runner.temp }}/inputs/source
       - uses: actions/download-artifact@v7
         if: needs.gate.outputs.family == 'rs'
         with:
