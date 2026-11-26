@@ -70,6 +70,11 @@ print(classify_text(text))
 
 print(convert(text, "qwerty", "mkhedruli")[:300])
 
+# Bicameral targets capitalise sentence starts (not after abbreviations like ქ. or გვ.);
+# verse=True also capitalises every line.
+convert("იყო არაბეთს როსტევან,\nმეფე ღმრთისაგან სვიანი", "mkhedruli", "shanidziseuli", verse=True)
+# 'Ⴈყო არაბეთს როსტევან,\nႫეფე ღმრთისაგან სვიანი'
+
 # Carlz dikensi daviT koperfildi Tavi pirveli dabadeba me viqnebi gmiri Cemive sakuTari Tavgadasavlisa Tu sxva...
 
 # latin

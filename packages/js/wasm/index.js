@@ -9,7 +9,8 @@ export function load(source) {
 }
 
 export const core = {
-  convert: (text, from, to) => w.convert(text, from, to),
+  convert: (text, from, to, { verse = false } = {}) =>
+    verse ? w.convertWith(text, from, to, true, true, true) : w.convert(text, from, to),
   interpret: (text, to) => w.interpret(text, to),
   classify: (text) => w.classify(text),
 };

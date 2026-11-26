@@ -1,4 +1,4 @@
-//! Each hand-written scanner against the exact upstream regex (anbani.py 3.4), on random text drawn from the
+//! Each hand-written scanner against the Python port's regex (anbani.py `core/converter.py`), on random text drawn from the
 //! characters those regexes care about. A failure prints the shrunk input.
 
 use alloc::string::{String, ToString};
@@ -12,7 +12,7 @@ use crate::generated::contractions::{CONTRACT_KEYS, EXPAND_KEYS};
 use crate::generated::tables::index_of;
 use crate::nlp::{contractions, preprocessing};
 
-const SENTENCE_START: &str = "((?:^|\\n[ \\t]*\\n)[\\s„“\"«‘(\\[—–-]*|[?.!჻][”“\"»’)\\]]*\\s+[„“\"«‘(\\[]*|:\\s*[„“\"«])([A-Za-zა-ჿႠ-ჅჇჍⴀ-ⴥⴧⴭᲐ-Ჿ0-9])";
+const SENTENCE_START: &str = "((?:^|\\n[ \\t]*\\n)[\\s„“\"«‘(\\[—–-]*|\\n[ \\t]*[—–-][ \\t]*[„“\"«‘(\\[]*|[?.!჻][”“\"»’)\\]]*\\s+[„“\"«‘(\\[]*|:\\s*[„“\"«])([A-Za-zა-ჿႠ-ჅჇჍⴀ-ⴥⴧⴭᲐ-Ჿ0-9])";
 const APOSTROPHE: &str = "([ა-ჿႠ-ჅჇჍⴀ-ⴥⴧⴭᲐ-Ჿ])'";
 
 const ALPHABET: &[char] = &[
@@ -44,9 +44,13 @@ fn reference_bicameral(text: &str, upper: &str, lower: &str) -> String {
         return String::new();
     }
     let low = convert_unicameral(text, "mkhedruli", lower);
+    let chars: Vec<char> = low.chars().collect();
+    let stops = crate::convert::abbreviation_stops(&chars, lower);
+    let masked: String = chars.iter().zip(&stops).map(|(&c, &m)| if m { '\u{E000}' } else { c }).collect();
     let start = Regex::new(SENTENCE_START).expect("upstream pattern compiles");
-    let caps =
-        start.replace_all(&low, |c: &Captures<'_, str>| alloc::format!("{}{}", &c[1], upper_of(&c[2], lower, upper)));
+    let caps = start
+        .replace_all(&masked, |c: &Captures<'_, str>| alloc::format!("{}{}", &c[1], upper_of(&c[2], lower, upper)));
+    let caps: String = caps.chars().zip(&stops).map(|(c, &m)| if m { '.' } else { c }).collect();
     let apos = Regex::new(APOSTROPHE).expect("upstream pattern compiles");
     apos.replace_all(&caps, |c: &Captures<'_, str>| upper_of(&c[1], lower, upper)).into_owned()
 }

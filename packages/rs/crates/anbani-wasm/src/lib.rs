@@ -28,8 +28,9 @@ pub fn convert_with(
     to: &str,
     sentence_caps: bool,
     apostrophe_caps: bool,
+    verse: bool,
 ) -> Result<String, JsValue> {
-    anbani_core::convert_with(text, from, to, anbani_core::Options { sentence_caps, apostrophe_caps })
+    anbani_core::convert_with(text, from, to, anbani_core::Options { sentence_caps, apostrophe_caps, verse })
         .map_err(|e| js(&e))
 }
 

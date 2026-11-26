@@ -15,13 +15,22 @@ fn reason(e: impl std::fmt::Display) -> Error {
     Error::from_reason(e.to_string())
 }
 
+/// Options for `convert`.
+#[napi(object)]
+pub struct ConvertOptions {
+    /// Bicameral targets also capitalise the first letter of every line (poetry).
+    pub verse: Option<bool>,
+}
+
 /// Convert `text` from one script or scheme to another.
 ///
 /// # Errors
 /// Throws the library's message for an unknown script or scheme.
 #[napi]
-pub fn convert(text: String, from: String, to: String) -> Result<String> {
-    anbani_core::convert(&text, &from, &to).map_err(reason)
+pub fn convert(text: String, from: String, to: String, options: Option<ConvertOptions>) -> Result<String> {
+    let verse = options.and_then(|o| o.verse).unwrap_or(false);
+    anbani_core::convert_with(&text, &from, &to, anbani_core::Options { verse, ..anbani_core::Options::default() })
+        .map_err(reason)
 }
 
 /// Detect the source script and convert to `to`.

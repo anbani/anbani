@@ -1,6 +1,7 @@
 export function load(source?: string | URL | Response | BufferSource | WebAssembly.Module): Promise<unknown>;
 export const core: {
-  convert(text: string, from: string, to: string): string;
+  /** `verse`: bicameral targets also capitalise the first letter of every line. */
+  convert(text: string, from: string, to: string, options?: { verse?: boolean }): string;
   interpret(text: string, to: string): string;
   classify(text: string): string;
 };

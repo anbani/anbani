@@ -51,7 +51,7 @@ const fn is_closer(c: char) -> bool {
     matches!(c, '”' | '“' | '"' | '»' | '’' | ')' | ']')
 }
 
-fn sentence_start_at(cs: &[char], i: usize) -> Option<(usize, usize)> {
+fn sentence_start_at(cs: &[char], i: usize, abbr: &[bool]) -> Option<(usize, usize)> {
     let letter_at = |j: usize| (j < cs.len() && chars::is_sentence_letter(cs[j])).then_some((j, j + 1));
     let para = if i == 0 {
         Some(0)
@@ -67,7 +67,16 @@ fn sentence_start_at(cs: &[char], i: usize) -> Option<(usize, usize)> {
             return Some(hit);
         }
     }
-    if matches!(cs[i], '?' | '.' | '!' | '჻') {
+    if cs[i] == '\n' {
+        let j = skip_while(cs, i + 1, |c| c == ' ' || c == '\t');
+        if j < cs.len() && matches!(cs[j], '—' | '–' | '-') {
+            let k = skip_while(cs, j + 1, |c| c == ' ' || c == '\t');
+            if let Some(hit) = letter_at(skip_while(cs, k, is_opener)) {
+                return Some(hit);
+            }
+        }
+    }
+    if matches!(cs[i], '?' | '.' | '!' | '჻') && !abbr[i] {
         let j = skip_while(cs, i + 1, is_closer);
         let k = skip_while(cs, j, chars::is_space);
         if k > j {
@@ -91,17 +100,73 @@ fn sentence_start_at(cs: &[char], i: usize) -> Option<(usize, usize)> {
 /// How bicameral targets place their capitals. Both on by default (anbani 3.3+ behaviour).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Options {
-    /// Capitalise the first letter of every sentence (text start, after a blank line, after `? . ! ჻`, after `:` and
-    /// an opening quote).
+    /// Capitalise the first letter of every sentence (text start, after a blank line, a dialogue line opening with a
+    /// dash, after `? . ! ჻` unless the stop ends an abbreviation, after `:` and an opening quote).
     pub sentence_caps: bool,
     /// Capitalise a letter followed by an apostrophe, consuming the apostrophe (`ს'აქართველო`).
     pub apostrophe_caps: bool,
+    /// Verse: capitalise the first letter of every line, after any spaces, opening quotes and dashes. Off by default.
+    pub verse: bool,
 }
 
 impl Default for Options {
     fn default() -> Self {
-        Self { sentence_caps: true, apostrophe_caps: true }
+        Self { sentence_caps: true, apostrophe_caps: true, verse: false }
     }
+}
+
+/// Abbreviations that usually close a list and so the sentence: their last full stop still ends a sentence.
+pub const SENTENCE_FINAL_ABBREVIATIONS: [&str; 3] = ["ა.შ.", "ა. შ.", "სხვ."];
+
+/// Which full stops belong to an abbreviation from the contractions table (`ქ.`, `გვ.`, `ე. წ.`), found in `cs` as
+/// written in `script`, with no Georgian letter right before or after it. Such a stop does not end a sentence, except
+/// the last stop of a [`SENTENCE_FINAL_ABBREVIATIONS`] entry.
+pub fn abbreviation_stops(cs: &[char], script: &str) -> Vec<bool> {
+    let mut mask = alloc::vec![false; cs.len()];
+    if !cs.contains(&'.') {
+        return mask;
+    }
+    let keys: Vec<(Vec<char>, bool)> = crate::generated::contractions::CMAP
+        .iter()
+        .filter(|(k, _)| k.contains('.'))
+        .map(|(k, _)| {
+            (convert_unicameral(k, "mkhedruli", script).chars().collect(), SENTENCE_FINAL_ABBREVIATIONS.contains(k))
+        })
+        .collect();
+    for (i, &c) in cs.iter().enumerate() {
+        if c != '.' {
+            continue;
+        }
+        mask[i] = keys.iter().any(|(key, final_ends)| {
+            key.iter().enumerate().any(|(d, &kc)| {
+                if kc != '.' || d > i || (*final_ends && d + 1 == key.len()) {
+                    return false;
+                }
+                let s = i - d;
+                let e = s + key.len();
+                e <= cs.len()
+                    && cs[s..e] == key[..]
+                    && (s == 0 || !chars::is_georgian(cs[s - 1]))
+                    && (e == cs.len() || !chars::is_georgian(cs[e]))
+            })
+        });
+    }
+    mask
+}
+
+/// Where verse capitals go: for each line, the first character after any spaces, tabs, opening quotes and dashes, if
+/// it is a sentence letter.
+fn line_starts(cs: &[char]) -> Vec<usize> {
+    let mut out = Vec::new();
+    for i in 0..cs.len() {
+        if i == 0 || cs[i - 1] == '\n' {
+            let j = skip_while(cs, i, |c| c == ' ' || c == '\t' || is_opener(c) || matches!(c, '—' | '–' | '-'));
+            if j < cs.len() && chars::is_sentence_letter(cs[j]) {
+                out.push(j);
+            }
+        }
+    }
+    out
 }
 
 /// Convert into a bicameral style: the lower script everywhere, the upper script at sentence starts and on letters
@@ -116,15 +181,26 @@ pub fn convert_bicameral_with(text: &str, from: &str, upper: &str, lower: &str, 
         return String::new();
     }
     let mut cs: Vec<char> = convert_unicameral(text, from, lower).chars().collect();
-    let mut i = 0;
-    while opts.sentence_caps && i < cs.len() {
-        if let Some((at, end)) = sentence_start_at(&cs, i) {
-            if let Some(up) = letter(cs[at], lower, upper) {
-                cs[at] = up.chars().next().unwrap_or(cs[at]);
+    let capitalise = |cs: &mut Vec<char>, at: usize| {
+        if let Some(up) = letter(cs[at], lower, upper) {
+            cs[at] = up.chars().next().unwrap_or(cs[at]);
+        }
+    };
+    if opts.sentence_caps {
+        let abbr = abbreviation_stops(&cs, lower);
+        let mut i = 0;
+        while i < cs.len() {
+            if let Some((at, end)) = sentence_start_at(&cs, i, &abbr) {
+                capitalise(&mut cs, at);
+                i = end;
+            } else {
+                i += 1;
             }
-            i = end;
-        } else {
-            i += 1;
+        }
+    }
+    if opts.verse {
+        for at in line_starts(&cs) {
+            capitalise(&mut cs, at);
         }
     }
     let mut out = String::with_capacity(cs.len() * 3);

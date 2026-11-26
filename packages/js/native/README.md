@@ -32,7 +32,8 @@ Linux support requires `process.report.getReport().header.glibcVersionRuntime` t
 
 The package exports the native functions directly:
 
-- `convert(text, from, to): string` — convert between scripts or schemes.
+- `convert(text, from, to, { verse }?): string` — convert between scripts or schemes; `verse: true` capitalises every
+  line on bicameral targets.
 - `interpret(text, to): string` — detect the source script, then convert.
 - `classify(text): string` — classify the input script.
 - `georgianise(text, mode?): string` — Latin to Georgian; `mode` is `fast`, `balanced` (default), or `accurate`.

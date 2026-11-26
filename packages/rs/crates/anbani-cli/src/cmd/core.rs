@@ -24,6 +24,9 @@ pub struct ConvertArgs {
     /// Bicameral targets: keep `letter'` as is instead of capitalising it
     #[arg(long)]
     no_apostrophe_caps: bool,
+    /// Bicameral targets: capitalise the first letter of every line (poetry)
+    #[arg(long)]
+    verse: bool,
 }
 
 /// `anbani interpret`.
@@ -54,7 +57,7 @@ pub struct RoundtripArgs {
 }
 
 pub fn convert(a: &ConvertArgs) -> Result<Out, Box<dyn std::error::Error>> {
-    let opts = Options { sentence_caps: !a.no_sentence_caps, apostrophe_caps: !a.no_apostrophe_caps };
+    let opts = Options { sentence_caps: !a.no_sentence_caps, apostrophe_caps: !a.no_apostrophe_caps, verse: a.verse };
     Ok(Out::Text(anbani_core::convert_with(&text_of(a.text.as_deref())?, &a.source, &a.target, opts)?))
 }
 

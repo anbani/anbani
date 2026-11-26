@@ -24,12 +24,12 @@ SCRIPT_ALIASES = {
     "latin": "qwerty",
 }
 
-def convert(text, dir_from, dir_to):
+def convert(text, dir_from, dir_to, *, verse=False):
     dir_from = SCRIPT_ALIASES.get(dir_from, dir_from)
     dir_to = SCRIPT_ALIASES.get(dir_to, dir_to)
 
     if MORSE in (dir_from, dir_to):
-        return _convert_morse(text, dir_from, dir_to)
+        return _convert_morse(text, dir_from, dir_to, verse)
 
     if dir_from not in VALID_SOURCES:
         raise ValueError(
@@ -38,7 +38,7 @@ def convert(text, dir_from, dir_to):
         )
 
     if dir_to in BICAMERAL_RULES:
-        return convert_bicameral(text, dir_from, dir_to)
+        return convert_bicameral(text, dir_from, dir_to, verse=verse)
 
     if dir_to not in data["alphabets"]:
         raise ValueError(
@@ -50,14 +50,14 @@ def convert(text, dir_from, dir_to):
 
 MORSE = "kartvelian_morse"
 
-def _convert_morse(text, dir_from, dir_to):
+def _convert_morse(text, dir_from, dir_to, verse=False):
     from .. import morse
 
     if dir_from != MORSE and dir_from not in VALID_SOURCES:
         raise ValueError(f"Unsupported source script {dir_from!r}; expected one of {(MORSE, *VALID_SOURCES)}.")
     if dir_from == MORSE:
         decoded = morse.decode(text)
-        return morse.encode(decoded) if dir_to == MORSE else convert(decoded, "mkhedruli", dir_to)
+        return morse.encode(decoded) if dir_to == MORSE else convert(decoded, "mkhedruli", dir_to, verse=verse)
     return morse.encode(text if dir_from == "mkhedruli" else convert(text, dir_from, "mkhedruli"))
 
 def interpret(text, dir_to):
@@ -95,21 +95,71 @@ def convert_unicameral(text, dir_from, dir_to):
 
 SENTENCE_LETTER = "A-Za-zა-ჿႠ-ჅჇჍⴀ-ⴥⴧⴭᲐ-Ჿ0-9"
 SENTENCE_START = re.compile(
-    r"((?:^|\n[ \t]*\n)[\s„“\"«‘(\[—–-]*|[?.!჻][”“\"»’)\]]*\s+[„“\"«‘(\[]*|:\s*[„“\"«])"
+    r"((?:^|\n[ \t]*\n)[\s„“\"«‘(\[—–-]*|\n[ \t]*[—–-][ \t]*[„“\"«‘(\[]*|[?.!჻][”“\"»’)\]]*\s+[„“\"«‘(\[]*|:\s*[„“\"«])"
     "([" + SENTENCE_LETTER + "])"
 )
 
-def convert_bicameral(text, dir_from, dir_to):
+LINE_START = re.compile(r"(^|\n)([ \t„“\"«‘(\[—–-]*)([" + SENTENCE_LETTER + "])")
+GEORGIAN_LETTER = re.compile("[ა-ჿႠ-ჅჇჍⴀ-ⴥⴧⴭᲐ-Ჿ]")
+SENTENCE_FINAL_ABBREVIATIONS = ("ა.შ.", "ა. შ.", "სხვ.")
+_ABBREVIATION_KEYS = {}
+
+def _abbreviation_keys(script):
+    keys = _ABBREVIATION_KEYS.get(script)
+    if keys is None:
+        from ..nlp.contractions import cmap
+        keys = {}
+        for contraction in cmap:
+            if "." not in contraction:
+                continue
+            key = convert_unicameral(contraction, "mkhedruli", script)
+            final_ends = contraction in SENTENCE_FINAL_ABBREVIATIONS
+            for d, ch in enumerate(key):
+                if ch == "." and not (final_ends and d == len(key) - 1):
+                    keys.setdefault(key[d - 1] if d else "", []).append((key, d))
+        _ABBREVIATION_KEYS[script] = keys
+    return keys
+
+def abbreviation_stops(text, script):
+    stops = set()
+    if "." not in text:
+        return stops
+    keys = _abbreviation_keys(script)
+    n = len(text)
+    for i, ch in enumerate(text):
+        if ch != ".":
+            continue
+        for key, d in keys.get(text[i - 1] if i else "", ()):
+            s = i - d
+            e = s + len(key)
+            if (s >= 0 and e <= n and text.startswith(key, s)
+                    and (s == 0 or not GEORGIAN_LETTER.match(text[s - 1]))
+                    and (e == n or not GEORGIAN_LETTER.match(text[e]))):
+                stops.add(i)
+                break
+    return stops
+
+def convert_bicameral(text, dir_from, dir_to, verse=False):
     if not text:
         return ""
 
     upper_script = BICAMERAL_RULES[dir_to]["upper"]
     lower_script = BICAMERAL_RULES[dir_to]["lower"]
 
+    lowered = convert_unicameral(text, dir_from, lower_script)
+    stops = abbreviation_stops(lowered, lower_script)
+    masked = "".join("\ue000" if i in stops else ch for i, ch in enumerate(lowered)) if stops else lowered
     converted = list(SENTENCE_START.sub(
         lambda m: m.group(1) + letter_converter(m.group(2), lower_script, upper_script),
-        convert_unicameral(text, dir_from, lower_script),
+        masked,
     ))
+    for i in stops:
+        converted[i] = "."
+    if verse:
+        converted = list(LINE_START.sub(
+            lambda m: m.group(1) + m.group(2) + letter_converter(m.group(3), lower_script, upper_script),
+            "".join(converted),
+        ))
 
     for match in re.finditer(r"[ა-ჿႠ-ჅჇჍⴀ-ⴥⴧⴭᲐ-Ჿ]'", "".join(converted)):
         converted[match.start()] = letter_converter(

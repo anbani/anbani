@@ -9,6 +9,9 @@ Per-package history before 4.0 is in each package's README.
 - anbani.js, anbani.py and anbani.rs share MAJOR.MINOR from now on: a 4.0.x of any of them has the same features and
   passes the same vectors in `common/spec/golden.json`. PATCH moves per language. TextArt keeps its own line.
 - Kartvelian Morse (`kartvelian_morse`) in all three languages, generated from one layout.
+- Bicameral capitalisation: the stop of a known abbreviation (`ქ.`, `გვ.`, `ე. წ.`, …) no longer starts a sentence,
+  except `ა.შ.` and `სხვ.`; a dialogue line opening with a dash starts one; opt-in `verse` capitalises every line
+  (`convert(..., { verse: true })`, `verse=True`, `anbani convert --verse`, 4th call argument `{"verse": true}`).
 - Python packaging moves to PEP 621 and the standard-library JSON parser (the hjson dependency is gone).
 - Opt-in Rust bindings as separate packages: `anbani-rs` (Python), `@anbani/native` (Node), `@anbani/wasm`
   (WebAssembly) and a C ABI.

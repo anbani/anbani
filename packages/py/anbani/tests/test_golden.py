@@ -31,7 +31,7 @@ for _v in GOLDEN["vectors"]:
         _validate_outcome(_v["expect_by_target"]["textart"], textart=True)
 
 REGISTRY = {
-    "core.convert": lambda a: anbani.convert(*a),
+    "core.convert": lambda a: anbani.convert(*a[:3], **(a[3] if len(a) > 3 else {})),
     "core.interpret": lambda a: anbani.interpret(*a),
     "core.classify": lambda a: anbani.classify_text(*a),
     "morse.encode": lambda a: anbani.morse.encode(*a),

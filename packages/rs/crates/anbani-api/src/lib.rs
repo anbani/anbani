@@ -9,7 +9,7 @@ use anbani_core::morse::{self, Profile};
 use anbani_core::nlp::{contractions, georgianisation, preprocessing};
 use anbani_core::numbers::{self, date, koronikon, letters, money, roman};
 use anbani_core::phon::{self, Hyphenation, Ipa};
-use anbani_core::{art, classify, convert, interpret, legacy, normalize, numerals, toolkit};
+use anbani_core::{art, classify, convert_with, interpret, legacy, normalize, numerals, toolkit, Options};
 use serde_json::{json, Value};
 
 pub mod morph;
@@ -79,6 +79,23 @@ fn s(args: &[Value], n: usize) -> Result<&str, String> {
     arg(args, n)?.as_str().ok_or_else(|| format!("argument {} must be a string", n + 1))
 }
 
+fn core_convert(args: &[Value]) -> Result<String, String> {
+    convert_with(s(args, 0)?, s(args, 1)?, s(args, 2)?, convert_options(args)?).map_err(|e| e.to_string())
+}
+
+fn convert_options(args: &[Value]) -> Result<Options, String> {
+    let mut opts = Options::default();
+    let Some(extra) = args.get(3) else { return Ok(opts) };
+    let map = extra.as_object().ok_or("argument 4 must be an options object")?;
+    for (key, value) in map {
+        match key.as_str() {
+            "verse" => opts.verse = value.as_bool().ok_or("option verse must be a boolean")?,
+            other => return Err(format!("unknown convert option '{other}'")),
+        }
+    }
+    Ok(opts)
+}
+
 fn i(args: &[Value], n: usize) -> Result<i64, String> {
     arg(args, n)?.as_i64().ok_or_else(|| format!("argument {} must be an integer", n + 1))
 }
@@ -141,7 +158,7 @@ fn call_text(id: &str, args: &[Value]) -> Result<Value, String> {
 /// for a missing or mistyped one.
 pub fn call(id: &str, args: &[Value]) -> Result<Value, String> {
     Ok(match id {
-        "core.convert" => json!(convert(s(args, 0)?, s(args, 1)?, s(args, 2)?).map_err(|e| e.to_string())?),
+        "core.convert" => json!(core_convert(args)?),
         "core.interpret" => json!(interpret(s(args, 0)?, s(args, 1)?).map_err(|e| e.to_string())?),
         "core.classify" => json!(classify(s(args, 0)?)),
         "core.normalize" => json!(normalize::normalize(s(args, 0)?, profile(s(args, 1)?)?)),

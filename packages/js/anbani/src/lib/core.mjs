@@ -1,6 +1,7 @@
 import data from "./data.mjs";
 import morse from "./morse.mjs";
 import { checkForAliases, classifyText, checkForDirection, isBicameral, toUpperCase, setCharAt } from "./utils.mjs";
+import { cmap } from "./contractions.mjs";
 
 const BICAMERAL_RULES = {
     sasataure: { upper: "asomtavruli", lower: "mtavruli" },
@@ -9,11 +10,12 @@ const BICAMERAL_RULES = {
     khutsuri: { upper: "asomtavruli", lower: "nuskhuri" },
 };
 
-const convert = (str, from, to) => {
+/** Convert between scripts. `options.verse`: bicameral targets also capitalise the first letter of every line. */
+const convert = (str, from, to, options = {}) => {
     let dir = { from, to }
     checkForAliases(dir)
     checkForDirection(dir)
-    return safeConvert(str, dir.from, dir.to)
+    return safeConvert(str, dir.from, dir.to, options)
 }
 
 const interpret = (str, to) => {
@@ -61,10 +63,56 @@ const convertUnicameral = (str, from, to) => {
 
 const SENTENCE_LETTER = "A-Za-zა-ჿႠ-ჅჇჍⴀ-ⴥⴧⴭᲐ-Ჿ0-9";
 const SENTENCE_START = new RegExp(
-    "((?:^|\\n[ \\t]*\\n)[\\s„“\"«‘(\\[—–-]*|[?.!჻][”“\"»’)\\]]*\\s+[„“\"«‘(\\[]*|:\\s*[„“\"«])" +
+    "((?:^|\\n[ \\t]*\\n)[\\s„“\"«‘(\\[—–-]*|\\n[ \\t]*[—–-][ \\t]*[„“\"«‘(\\[]*|[?.!჻][”“\"»’)\\]]*\\s+[„“\"«‘(\\[]*|:\\s*[„“\"«])" +
     "([" + SENTENCE_LETTER + "])", "g");
 
-const convertBicameral = (str, from, to) => {
+const LINE_START = new RegExp("(^|\\n)([ \\t„“\"«‘(\\[—–-]*)([" + SENTENCE_LETTER + "])", "g");
+const GEORGIAN_LETTER = /[ა-ჿႠ-ჅჇჍⴀ-ⴥⴧⴭᲐ-Ჿ]/;
+const SENTENCE_FINAL_ABBREVIATIONS = ["ა.შ.", "ა. შ.", "სხვ."];
+const abbreviationKeys = new Map();
+
+const keysFor = (script) => {
+    let keys = abbreviationKeys.get(script);
+    if (keys === undefined) {
+        keys = new Map();
+        for (const contraction of Object.keys(cmap)) {
+            if (!contraction.includes(".")) continue;
+            const key = convertUnicameral(contraction, "mkhedruli", script);
+            const finalEnds = SENTENCE_FINAL_ABBREVIATIONS.includes(contraction);
+            for (let d = 0; d < key.length; d++) {
+                if (key[d] !== "." || (finalEnds && d === key.length - 1)) continue;
+                const before = d ? key[d - 1] : "";
+                if (!keys.has(before)) keys.set(before, []);
+                keys.get(before).push([key, d]);
+            }
+        }
+        abbreviationKeys.set(script, keys);
+    }
+    return keys;
+};
+
+/** Indices of full stops that belong to an abbreviation from the contractions table and so end no sentence. */
+const abbreviationStops = (str, script) => {
+    const stops = new Set();
+    if (!str.includes(".")) return stops;
+    const keys = keysFor(script);
+    const n = str.length;
+    for (let i = 0; i < n; i++) {
+        if (str[i] !== ".") continue;
+        for (const [key, d] of keys.get(i ? str[i - 1] : "") ?? []) {
+            const s = i - d, e = s + key.length;
+            if (s >= 0 && e <= n && str.startsWith(key, s)
+                && (s === 0 || !GEORGIAN_LETTER.test(str[s - 1]))
+                && (e === n || !GEORGIAN_LETTER.test(str[e]))) {
+                stops.add(i);
+                break;
+            }
+        }
+    }
+    return stops;
+};
+
+const convertBicameral = (str, from, to, { verse = false } = {}) => {
     let upperScript = BICAMERAL_RULES[to].upper;
     let lowerScript = BICAMERAL_RULES[to].lower;
 
@@ -74,7 +122,20 @@ const convertBicameral = (str, from, to) => {
         converted += key === undefined || key === "" ? str[i] : key;
     }
 
+    const stops = abbreviationStops(converted, lowerScript);
+    if (stops.size) {
+        const chars = converted.split("");
+        for (const i of stops) chars[i] = "\uE000";
+        converted = chars.join("");
+    }
     converted = converted.replace(SENTENCE_START, (m, pre, letter) => pre + toUpperCase(letter, lowerScript, upperScript));
+    if (stops.size) {
+        const chars = converted.split("");
+        for (const i of stops) chars[i] = ".";
+        converted = chars.join("");
+    }
+    if (verse)
+        converted = converted.replace(LINE_START, (m, nl, pre, letter) => nl + pre + toUpperCase(letter, lowerScript, upperScript));
 
     let matched = converted.match(/[ა-ჿႠ-ჅჇჍⴀ-ⴥⴧⴭᲐ-Ჿ]'/g);
     if (matched != null)
@@ -89,10 +150,10 @@ const convertBicameral = (str, from, to) => {
     return converted;
 }
 
-const safeConvert = (str, from, to) => {
+const safeConvert = (str, from, to, options = {}) => {
     if (from === "kartvelian_morse") {
         const decoded = morse.decode(str);
-        return to === "kartvelian_morse" ? morse.encode(decoded) : safeConvert(decoded, "mkhedruli", to);
+        return to === "kartvelian_morse" ? morse.encode(decoded) : safeConvert(decoded, "mkhedruli", to, options);
     }
     if (to === "kartvelian_morse")
         return morse.encode(from === "mkhedruli" ? str : safeConvert(str, from, "mkhedruli"));
@@ -100,7 +161,7 @@ const safeConvert = (str, from, to) => {
         if (!isBicameral(to))
             return convertUnicameral(str, from, to);
         else
-            return convertBicameral(str, from, to);
+            return convertBicameral(str, from, to, options);
 }
 
 const classify = (str) => classifyText(str);

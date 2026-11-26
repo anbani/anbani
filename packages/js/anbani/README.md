@@ -113,7 +113,12 @@ anbani.core.convert("ანბანი", "mkhedruli", "ნუსხური")
 ```
 
 Georgian also has bicameral styles of the alphabet. If you first hear about that now, check out [this article](https://medium.com/@georgegach/%E1%83%A5%E1%83%90%E1%83%A0%E1%83%97%E1%83%A3%E1%83%9A%E1%83%98-%E1%83%9B%E1%83%97%E1%83%90%E1%83%95%E1%83%A0%E1%83%A3%E1%83%9A%E1%83%94%E1%83%91%E1%83%98%E1%83%A1-%E1%83%A8%E1%83%94%E1%83%A1%E1%83%90%E1%83%AE%E1%83%94%E1%83%91-5c2d376ff3ac).
-Generally, automatic capitalization occurs at the beginning of the sentence. However, you can also append the letter with `'` symbol in order to capitalize the word during conversion. This trick also works at [anbani.ge](http://anbani.ge) as well. Here's an example
+Bicameral targets capitalise the first letter of each sentence: at the start of the text, after a blank line, after `? . ! ჻` (but not the stop of an abbreviation such as `ქ.`, `გვ.` or `ე. წ.`; `ა.შ.` and `სხვ.` still close a sentence), after `:` and an opening quote, and on a dialogue line that opens with a dash. Pass `{ verse: true }` to also capitalise every line, as poetry is printed:
+```javascript
+anbani.core.convert("იყო არაბეთს როსტევან,\nმეფე ღმრთისაგან სვიანი", "mkhedruli", "shanidziseuli", { verse: true })
+// 'Ⴈყო არაბეთს როსტევან,\nႫეფე ღმრთისაგან სვიანი'
+```
+You can also append the letter with `'` symbol in order to capitalize the word during conversion. This trick also works at [anbani.ge](http://anbani.ge) as well. Here's an example
 ```javascript
 anbani.core.convert("ა'ნბანი", "მხედრული", "შანიძისეული")
 // 'Ⴀნბანი'

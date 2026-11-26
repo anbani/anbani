@@ -12,9 +12,10 @@ fn value_error(e: impl std::fmt::Display) -> PyErr {
 }
 
 #[pyfunction]
-#[pyo3(signature = (text, from_, to))]
-fn convert(text: &str, from_: &str, to: &str) -> PyResult<String> {
-    anbani_core::convert(text, from_, to).map_err(value_error)
+#[pyo3(signature = (text, from_, to, *, verse = false))]
+fn convert(text: &str, from_: &str, to: &str, verse: bool) -> PyResult<String> {
+    anbani_core::convert_with(text, from_, to, anbani_core::Options { verse, ..anbani_core::Options::default() })
+        .map_err(value_error)
 }
 
 #[pyfunction]

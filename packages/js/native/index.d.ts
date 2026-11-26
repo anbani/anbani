@@ -1,5 +1,6 @@
 /** Independent opt-in Rust bindings; library failures throw Error. */
-export function convert(text: string, from: string, to: string): string;
+/** `verse`: bicameral targets also capitalise the first letter of every line. */
+export function convert(text: string, from: string, to: string, options?: { verse?: boolean }): string;
 export function interpret(text: string, to: string): string;
 export function classify(text: string): string;
 /** The default mode is balanced. */
