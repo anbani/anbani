@@ -1,0 +1,43 @@
+[workspace]
+resolver = "2"
+members = ["crates/anbani-core", "crates/anbani-api", "crates/anbani-cabi", "crates/anbani-cli", "crates/anbani-mcp", "crates/anbani-napi", "crates/anbani-py", "crates/anbani-spell", "crates/anbani-tui", "crates/anbani-wasm"]
+
+[workspace.package]
+version = "4.0.0"
+edition = "2021"
+rust-version = "1.85"
+license = "GPL-3.0-or-later"
+repository = "https://github.com/Anbani/anbani"
+authors = ["George Gach"]
+
+[workspace.dependencies]
+anbani-core = { path = "crates/anbani-core", version = "4.0.0", default-features = false }
+anbani-api = { path = "crates/anbani-api", version = "4.0.0" }
+anbani-mcp = { path = "crates/anbani-mcp", version = "4.0.0" }
+anbani-spell = { path = "crates/anbani-spell", version = "4.0.0" }
+anbani-tui = { path = "crates/anbani-tui", version = "4.0.0" }
+clap = { version = "4.5", features = ["derive"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+wasm-bindgen = "0.2"
+
+[workspace.lints.rust]
+future-incompatible = { level = "warn", priority = 2 }
+nonstandard_style = { level = "deny", priority = 1 }
+unsafe_code = "forbid"
+missing_docs = "warn"
+
+[workspace.lints.clippy]
+all = { level = "deny", priority = 10 }
+redundant_clone = { level = "deny", priority = 9 }
+manual_while_let_some = { level = "deny", priority = 4 }
+pedantic = { level = "warn", priority = 3 }
+module_name_repetitions = { level = "allow", priority = 5 }
+must_use_candidate = { level = "allow", priority = 5 }
+allow_attributes = { level = "deny", priority = 11 }
+allow_attributes_without_reason = { level = "deny", priority = 11 }
+
+[profile.release]
+lto = "fat"
+codegen-units = 1
+strip = true

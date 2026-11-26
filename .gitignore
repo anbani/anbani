@@ -1,11 +1,16 @@
-# gitignore
-
-node_modules
-
-# playground
-playground/
-utils/playground*
-
-# Only apps should have lockfiles
-yarn.lock
-package-lock.json
+/packages/rs/target/
+/packages/rs/crates/*/target/
+/packages/js/wasm/anbani_wasm*
+/packages/js/wasm/generated/
+*.wasm
+.DS_Store
+/.worktrees/
+/packages/js/node_modules/
+/packages/js/*/node_modules/
+/packages/py/*/build/
+/packages/py/*/dist/
+/packages/py/*/*.egg-info/
+/common/spec/sources/
+__pycache__/
+*.pyc
+/packages/py/.venv/

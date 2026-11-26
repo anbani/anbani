@@ -1,0 +1,42 @@
+[package]
+name = "anbani-py"
+description = "Opt-in Python bindings for the anbani Georgian toolkit (PyO3, abi3), imported as anbani_rs"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+publish = false
+include = ["src/**", "build.rs", "LICENSE", "NOTICE"]
+
+[lib]
+name = "anbani_rs"
+crate-type = ["cdylib"]
+test = false
+doctest = false
+
+[dependencies]
+anbani-api = { workspace = true }
+anbani-core = { workspace = true, features = ["std"] }
+pyo3 = { version = "0.26", features = ["extension-module", "abi3-py39"] }
+serde_json = { workspace = true }
+
+[build-dependencies]
+pyo3-build-config = "0.26"
+
+[lints.rust]
+future-incompatible = { level = "warn", priority = 2 }
+nonstandard_style = { level = "deny", priority = 1 }
+unsafe_code = "deny"
+missing_docs = "warn"
+
+[lints.clippy]
+all = { level = "deny", priority = 10 }
+redundant_clone = { level = "deny", priority = 9 }
+manual_while_let_some = { level = "deny", priority = 4 }
+pedantic = { level = "warn", priority = 3 }
+module_name_repetitions = { level = "allow", priority = 5 }
+must_use_candidate = { level = "allow", priority = 5 }
+allow_attributes = { level = "deny", priority = 11 }
+allow_attributes_without_reason = { level = "deny", priority = 11 }

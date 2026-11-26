@@ -1,0 +1,33 @@
+[package]
+name = "anbani-core"
+description = "Georgian script and language toolkit: conversion between every Georgian script and romanisation, classification, georgianisation, contractions, tokenisation, numerals, statistics, lorem"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+keywords = ["georgian", "transliteration", "unicode", "nlp", "kartvelian"]
+categories = ["text-processing", "internationalization", "no-std"]
+include = ["src/**", "tests/**", "benches/**", "proptest-regressions/**", "LICENSE", "NOTICE"]
+
+[features]
+default = ["std", "legacy"]
+std = []
+legacy = []
+
+[dependencies]
+
+[dev-dependencies]
+criterion = "0.7.0"
+fancy-regex = "0.20.0"
+hypher = "0.1.8"
+proptest = "1.11.0"
+serde_json = { workspace = true }
+
+[lints]
+workspace = true
+
+[[bench]]
+name = "core"
+harness = false

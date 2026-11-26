@@ -1,0 +1,484 @@
+<!-- en.wikipedia.org "Georgian conjugation", revision 1367920251 (2026-08-06), CC BY-SA 4.0,
+     https://en.wikipedia.org/w/index.php?title=Georgian_conjugation&oldid=1367920251 . Sections "Class 1" to
+     "Preverbs" verbatim (trailing whitespace trimmed); read by tools/gen-paradigms.py. -->
+==Class 1 (transitive verbs)==
+* In the present and future sub-series, the subject is in the nominative case and both the direct and indirect objects are in the dative case. The subject is indicated by the ''v''- set marker, while the object is indicated by the ''m''- set marker.<ref name="grammar"/>
+* In the aorist series, the subject is in the ergative case while the direct object is in the nominative case. Indirect object is in the dative case. The subject is indicated by the ''v''- set marker, while the object is indicated by the ''m''- set marker.
+* In the perfective series, the subject is in the dative case while the direct object is in the nominative case. Indirect object is usually indicated with the postposition -''tvis'' (for). The subject is indicated by the ''m''- set marker, while the object is indicated by the ''v''- set marker.
+* In the present sub-series, the preverbs are absent, but the thematic suffixes are present.
+* In the future sub-series, the preverbs emerge, and the thematic suffixes remain.
+* In the aorist series, the preverbs emerge, and the thematic suffixes are absent (mostly).
+* In the perfective series, the preverbs emerge, and, if the thematic suffix is ''-eb'', its presence depends on whether or not there is a vowel in the root of the verb. If there is a vowel, the thematic suffix remains, otherwise it is lost.
+
+Here is a full conjugation of a verb with all persons in all screeves:
+
+'''Verb root'''
+
+შენ, ''šen''; infinite form აშენება, ''ašeneba'' (to build)
+
+'''Present subseries'''
+
+The thematic suffix ''-eb'' is present, but without the preverb:
+
+{| class="wikitable" style="text-align:center;"
+!&nbsp;
+!Present indicative
+!Imperfect ¹
+!Present subjunctive ²
+|-
+|1s || ვაშენებ     ''v-a-šen-eb'' || ვაშენებდი,    ''v-a-šen-eb-d-i'' || ვაშენებდე     ''v-a-šen-eb-de''
+|-
+|2s || აშენებ       ''a-šen-eb'' || აშენებდი,      ''a-šen-eb-d-i'' || აშენებდე       ''a-šen-eb-de''
+|-
+|3s || აშენებს    ''a-šen-eb-s'' || აშენებდა       ''a-šen-eb-d-a'' || აშენებდეს     ''a-šen-eb-des''
+|-
+|1p || ვაშენებთ ''v-a-šen-eb-t'' || ვაშენებდით ''v-a-šen-eb-d-i-t'' || ვაშენებდეთ ''v-a-šen-eb-det''
+|-
+|2p || აშენებთ   ''a-šen-eb-t'' || აშენებდით   ''a-šen-eb-d-i-t'' || აშენებდეთ   ''a-šen-eb-det''
+|-
+|3p || აშენებენ  ''a-šen-eb-en'' || აშენებდნენ  ''a-šen-eb-d-nen'' || აშენებდნენ  ''a-šen-eb-d-nen''
+|}
+
+'''Future subseries'''
+
+The preverb ''a-'' emerges:
+
+{| class="wikitable" style="text-align:center;"
+!&nbsp;
+!Future indicative
+!Conditional
+!Future subjunctive
+|-
+|1s || ავაშენებ, ''a-v-a-šen-eb'' || ავაშენებდი, ''a-v-a-šen-eb-d-i'' || ავაშენებდე, ''a-v-a-šen-eb-de''
+|-
+|2s || ააშენებ, ''a-a-šen-eb'' || ააშენებდი, ''a-a-šen-eb-d-i'' || ააშენებდე, ''a-a-šen-eb-de''
+|-
+|3s || ააშენებს, ''a-a-šen-eb-s'' || ააშენებდა, ''a-a-šen-eb-d-a'' || ააშენებდეს, ''a-a-šen-eb-des''
+|-
+|1p || ავაშენებთ, ''a-v-a-šen-ebt'' || ავაშენებდით, ''a-v-a-šen-eb-d-it'' || ავაშენებდეთ, ''a-v-a-šen-eb-d-et''
+|-
+|2p || ააშენებთ, ''a-a-šen-ebt'' || ააშენებდით, ''a-a-šen-eb-d-it'' || ააშენებდეთ, ''a-a-šen-eb-d-et''
+|-
+|3p || ააშენებენ, ''a-a-šen-eb-en'' || ააშენებდნენ, ''a-a-šen-eb-d-nen'' || ააშენებდნენ, ''a-a-šen-eb-d-nen''
+|}
+
+'''Aorist series'''
+
+The preverb is present; the thematic suffix is lost:
+
+{| class="wikitable" style="text-align:center;"
+!&nbsp;
+!Aorist indicative ³
+!Optative
+|-
+|1s || ავაშენე, ''a-v-a-šene'' || ავაშენო, ''a-v-a-šen-o''
+|-
+|2s || ააშენე, ''a-a-šene''|| ააშენო, ''a-a-šen-o''
+|-
+|3s || ააშენა, ''a-a-šen-a''|| ააშენოს, ''a-a-šen-o-s''
+|-
+|1p || ავაშენეთ, ''a-v-a-šenet''|| ავაშენოთ, ''a-v-a-šen-o-t''
+|-
+|2p || ააშენეთ, ''a-a-šenet''|| ააშენოთ, ''a-a-šen-o-t''
+|-
+|3p || ააშენეს, ''a-a-šenes''|| ააშენონ, ''a-a-šen-o-n''
+|}
+
+'''Perfective series'''
+
+The preverb is present; the thematic suffix is present (due to vowel in root). '''N.B.''' subject is marked with the ''m-'' set, and the verb form here assumes a 3rd person singular direct object:
+
+{| class="wikitable" style="text-align:center;"
+!&nbsp;
+!Perfect †
+!Pluperfect ‡
+!Perfect subjunctive
+|-
+|1s || ამიშენებია, ''a-m-i-šen-eb-i-a'' || ამეშენებინა, ''a-m-e-šen-eb-in-a''|| ამეშენებინოს, ''a-m-e-šen-eb-in-o-s''
+|-
+|2s || აგიშენებია, ''a-g-i-šen-eb-i-a''|| აგეშენებინა, ''a-g-e-šen-eb-in-a''|| აგეშენებინოს, ''a-g-e-šen-eb-in-o-s''
+|-
+|3s || აუშენებია, ''a-u-šen-eb-i-a''|| აეშენებინა, ''a-e-šen-eb-in-a''|| აეშენებინოს, ''a-e-šen-eb-in-o-s''
+|-
+|1p || აგვიშენებია, ''a-gv-i-šen-eb-i-a''|| აგვეშენებინა, ''a-gv-e-šen-eb-in-a''|| აგვეშენებინოს, ''a-gv-e-šen-eb-in-o-s''
+|-
+|2p || აგიშენებიათ, ''a-g-i-šen-eb-i-a-t''|| აგეშენებინათ, ''a-g-e-šen-eb-in-a-t''|| აგეშენებინოთ, ''a-g-e-šen-eb-in-o-t''
+|-
+|3p || აუშენებიათ, ''a-u-šen-eb-i-a-t''|| აეშენებინათ, ''a-e-šen-eb-in-a-t''|| აეშენებინოთ, ''a-e-šen-eb-in-o-t''
+|}
+
+'''Notes'''
+
+¹ The imperfective screeve of class 1 verbs always takes the strong suffixal nominal marker -''i''
+
+² The present subjunctive screeve of class 1 verbs always takes the weak suffixal nominal marker -''e''
+
+³ Class 1 verbs which take the weak suffixal nominal marker in the aorist screeve, take the -''o''- nominal
+marker in the optative screeve, and verbs which take the strong suffixal nominal marker in the aorist
+screeve, take the -''a''- nominal marker in the optative screeve.
+
+† The perfective screeve of class 1 verbs always uses the -''i''- versioner.
+
+‡ The pluperfect and the perfect subjunctive screeves of class 1 verbs always employ the -''e''- versioner.
+
+==Class 2 (intransitive verbs)==
+* In class 2 verbs, the subject is in the nominative case for all series, using the ''v''- set marker. Indirect objects (the benefactor or possessive) are indicated with the ''m''- set marker.
+* The pattern of preverbs and thematic suffixes is generally the same as with class 1 verbs, except in the perfective series.
+* Almost all intransitives utilise the thematic suffix ''-eb'' in formation. Additionally, intransitives may use formational affixes: resulting in a total of three types of formation pattern in intransitives:
+# prefixal: ''i-'' appears immediately before the verb root
+# suffixal: ''-d'' appears immediately after the verb root
+# markerless: no affixes appear
+
+Below is a full conjugation of an intransitive verb:
+
+'''Verb root'''
+
+ბად, ''bad''; infinite form დაბადება, ''dabadeba'' (to be born)
+
+This verb exhibits the prefixal intransitive pattern; ი-, ''i-'' is placed immediately before the verb root in all series apart from the perfective.
+
+'''Present subseries'''
+
+The thematic suffix ''-eb'' is present, without the preverb:
+
+{| class="wikitable" style="text-align:center;"
+!&nbsp;
+!Present indicative
+!Imperfect
+!Present subjunctive
+|-
+|1s || ვიბადები, ''v-i-bad-eb-i''|| ვიბადებოდი, ''v-i-bad-eb-od-i''|| ვიბადებოდე, ''v-i-bad-eb-od-e''
+|-
+|2s || იბადები, ''i-bad-eb-i''|| იბადებოდი, ''i-bad-eb-od-i''|| იბადებოდე, ''i-bad-eb-od-e''
+|-
+|3s || იბადება, ''i-bad-eb-a''|| იბადებოდა, ''i-bad-eb-od-a''|| იბადებოდეს, ''i-bad-eb-od-e-s''
+|-
+|1p || ვიბადებით, ''v-i-bad-eb-i-t''|| ვიბადებოდით, ''v-i-bad-eb-od-i-t''|| ვიბადებოდეთ, ''v-i-bad-eb-od-e-t''
+|-
+|2p || იბადებით, ''i-bad-eb-i-t''|| იბადებოდით, ''i-bad-eb-od-i-t''|| იბადებოდეთ, ''i-bad-eb-od-e-t''
+|-
+|3p || იბადებიან, ''i-bad-eb-i-an''|| იბადებოდნენ, ''i-bad-eb-od-nen''|| იბადებოდნენ, ''i-bad-eb-od-nen''
+|}
+
+'''Future subseries'''
+
+The preverb ''da-'' emerges:
+
+{| class="wikitable" style="text-align:center;"
+!&nbsp;
+!Future indicative
+!Conditional
+!Future subjunctive
+|-
+|1s || დავიბადები, ''da-v-i-bad-eb-i''|| დავიბადებოდი, ''da-v-i-bad-eb-od-i''|| დავიბადებოდე, ''da-v-i-bad-eb-od-e''
+|-
+|2s || დაიბადები, ''da-i-bad-eb-i''|| დაიბადებოდი, ''da-i-bad-eb-od-i''|| დაიბადებოდე, ''da-i-bad-eb-od-e''
+|-
+|3s || დაიბადება, ''da-i-bad-eb-a''|| დაიბადებოდა, ''da-i-bad-eb-od-a''|| დაიბადებოდეს, ''da-i-bad-eb-od-e-s''
+|-
+|1p || დავიბადებით, ''da-v-i-bad-eb-i-t''|| დავიბადებოდით, ''da-v-i-bad-eb-od-i-t''|| დავიბადებოდეთ, ''da-v-i-bad-eb-od-e-t''
+|-
+|2p || დაიბადებით, ''da-i-bad-eb-i-t''|| დაიბადებოდით, ''da-i-bad-eb-od-i-t''|| დაიბადებოდეთ, ''da-i-bad-eb-od-e-t''
+|-
+|3p || დაიბადებიან, ''da-i-bad-eb-i-an''|| დაიბადებოდნენ, ''da-i-bad-eb-od-nen''|| დაიბადებოდნენ, ''da-i-bad-eb-od-nen''
+|}
+
+'''Aorist series'''
+
+The preverb is present; the thematic suffix is lost:
+
+{| class="wikitable" style="text-align:center;"
+!&nbsp;
+!Aorist indicative
+!Optative
+|-
+|1s || დავიბადე, ''da-v-i-bad-e''|| დავიბადო, ''da-v-i-bad-o''
+|-
+|2s || დაიბადე, ''da-i-bad-e''|| დაიბადო, ''da-i-bad-o''
+|-
+|3s || დაიბადა, ''da-i-bad-a''|| დაიბადოს, ''da-i-bad-o-s''
+|-
+|1p || დავიბადეთ, ''da-v-i-bad-e-t''|| დავიბადოთ, ''da-v-i-bad-o-t''
+|-
+|2p || დაიბადეთ, ''da-i-bad-e-t''|| დაიბადოთ, ''da-i-bad-o-t''
+|-
+|3p || დაიბადნენ, ''da-i-bad-nen''|| დაიბადონ, ''da-i-bad-o-n''
+|}
+
+'''Perfective series'''
+
+Formation comprises the past participle (''da-(v)-bad-eb-ul-i''), followed by a form of the copula:
+
+{| class="wikitable" style="text-align:center;"
+!&nbsp;
+!Perfect
+!Pluperfect
+!Perfect subjunctive
+|-
+|1s || დავბადებულვარ, ''da-v-bad-eb-ul-v-a-r''|| დავბადებულიყავი, ''da-v-bad-eb-ul-i-q̇av-i''|| დავბადებულიყო, ''da-v-bad-eb-ul-i-q̇-o''
+|-
+|2s || დაბადებულხარ, ''da-bad-eb-ul-x-a-r''|| დაბადებულიყავი, ''da-bad-eb-ul-i-q̇av-i''|| დაბადებულიყო, ''da-bad-eb-ul-i-q̇-o''
+|-
+|3s || დაბადებულა, ''da-bad-eb-ul-a''|| დაბადებულიყო, ''da-bad-eb-ul-i-q̇-o''|| დაბადებულიყოს, ''da-bad-eb-ul-i-q̇-o-s''
+|-
+|1p || დავბადებულვართ, ''da-v-bad-eb-ul-v-a-r-t''|| დავბადებულიყავით, ''da-v-bad-eb-ul-i-q̇av-i-t''|| დავბადებულიყოთ, ''da-v-bad-eb-ul-i-q̇-o-t''
+|-
+|2p || დაბადებულხართ, ''da-bad-eb-ul-x-a-r-t''|| დაბადებულიყავით, ''da-bad-eb-ul-i-q̇av-i-t''|| დაბადებულიყოთ, ''da-bad-eb-ul-i-q̇-o-t''
+|-
+|3p || დაბადებულან, ''da-bad-eb-ul-an''|| დაბადებულიყვნენ, ''da-bad-eb-ul-i-q̇v-nen''|| დაბადებულიყონ, ''da-bad-eb-ul-i-q̇-o-n''
+|}
+
+==Class 3 (medial verbs)==
+* These verbs have the same case marking as class 1 verbs (i.e. aorist series - ergative-nominative; present/future series - nominative-dative; perfective series - dative-nominative), the difference being that they describe intransitive activities: verbs expressing movement, sound and weather are found in this category.<ref name="grammar"/>
+* Therefore, many class 3 verbs do not take a direct object; however some may (e.g. ''tamašob'' - to play), whilst others take an obligatory direct object (e.g. ''q̇idulob'' - to buy).
+* Almost all medials form the future/aorist in the same, very regular, way, outlined below.
+
+Full conjugation follows:
+
+'''Verb root'''
+
+თამაშ, ''tamaš''; infinite form თამაშობა, ''tamašoba'' (to play)
+
+'''Present subseries'''
+
+The thematic suffix ''-ob'' is present:
+
+{| class="wikitable" style="text-align:center;"
+!&nbsp;
+!Present indicative
+!Imperfect
+!Present subjunctive
+|-
+|1s || ვთამაშობ, ''v-tamaš-ob'' || ვთამაშობდი, ''v-tamaš-ob-d-i'' || ვთამაშობდე, ''v-tamaš-ob-d-e''
+|-
+|2s || თამაშობ, ''tamaš-ob'' || თამაშობდი, ''tamaš-ob-d-i'' || თამაშობდე, ''tamaš-ob-d-e''
+|-
+|3s || თამაშობს, ''tamaš-ob-s'' || თამაშობდა, ''tamaš-ob-d-a'' || თამაშობდეს, ''tamaš-ob-d-e-s''
+|-
+|1p || ვთამაშობთ, ''v-tamaš-ob-t'' || ვთამაშობდით, ''v-tamaš-ob-d-i-t'' || ვთამაშობდეთ, ''v-tamaš-ob-d-e-t''
+|-
+|2p || თამაშობთ, ''tamaš-ob-t'' || თამაშობდით, ''tamaš-ob-d-i-t'' || თამაშობდეთ, ''tamaš-ob-d-e-t''
+|-
+|3p || თამაშობენ, ''tamaš-ob-en'' || თამაშობდნენ, ''tamaš-ob-d-nen'' || თამაშობდნენ, ''tamaš-ob-d-nen''
+|}
+
+'''Future subseries'''
+
+A type of preverb ''i-'' emerges, in combination with the thematic suffix ''-eb'' which replaces ''-ob'' (or any thematic suffix):
+
+{| class="wikitable" style="text-align:center;"
+!&nbsp;
+!Future indicative
+!Conditional
+!Future subjunctive
+|-
+|1s || ვითამაშებ, ''v-i-tamaš-eb'' || ვითამაშებდი, ''v-i-tamaš-eb-d-i'' || ვითამაშებდე, ''v-i-tamaš-eb-d-e''
+|-
+|2s || ითამაშებ, ''i-tamaš-eb'' || ითამაშებდი, ''i-tamaš-eb-d-i'' || ითამაშებდე, ''i-tamaš-eb-d-e''
+|-
+|3s || ითამაშებს, ''i-tamaš-eb-s'' || ითამაშებდა, ''i-tamaš-eb-d-a'' || ითამაშებდეს, ''i-tamaš-eb-d-e-s''
+|-
+|1p || ვითამაშებთ, ''v-i-tamaš-eb-t'' || ვითამაშებდით, ''v-i-tamaš-eb-d-i-t'' || ვითამაშებდეთ, ''v-i-tamaš-eb-d-e-t''
+|-
+|2p || ითამაშებთ, ''i-tamaš-eb-t'' || ითამაშებდით, ''i-tamaš-eb-d-i-t'' || ითამაშებდეთ, ''i-tamaš-eb-d-e-t''
+|-
+|3p || ითამაშებენ, ''i-tamaš-eb-en'' || ითამაშებდნენ, ''i-tamaš-eb-d-nen'' || ითამაშებდნენ, ''i-tamaš-eb-d-nen''
+|}
+
+'''Aorist series'''
+
+Based on the future form with prefix, but with the loss of the thematic suffix:
+
+{| class="wikitable" style="text-align:center;"
+!&nbsp;
+!Aorist indicative
+!Optative
+|-
+|1s || ვითამაშე, ''v-i-tamaš-e'' || ვითამაშო, ''v-i-tamaš-o''
+|-
+|2s || ითამაშე, ''i-tamaš-e'' || ითამაშო, ''i-tamaš-o''
+|-
+|3s || ითამაშა, ''i-tamaš-a'' || ითამაშოს, ''i-tamaš-o-s''
+|-
+|1p || ვითამაშეთ, ''v-i-tamaš-e-t'' || ვითამაშოთ, ''v-i-tamaš-o-t''
+|-
+|2p || ითამაშეთ, ''i-tamaš-e-t'' || ითამაშოთ, ''i-tamaš-o-t''
+|-
+|3p || ითამაშეს, ''i-tamaš-es'' || ითამაშონ, ''i-tamaš-o-n''
+|}
+
+'''Perfect series'''
+
+There is no preverb or thematic suffix; subjects are marked in the same way as in class 1 (i.e. with the ''m-'' set and appropriate formant vowels). The object (if present in context) is assumed to be 3rd person singular. '''N.B''' in this series, for some unknown reason, all screeves allow an optional ''-n-'' directly after the stem.
+
+{| class="wikitable" style="text-align:center;"
+!&nbsp;
+!Perfect
+!Pluperfect
+!Perfect subjunctive
+|-
+|1s || მითამაშ(ნ)ია, ''m-i-tamaš-(n-)i-a'' || მეთამაშ(ნ)ა, ''m-e-tamaš-(n-)a'' || მეთამაშ(ნ)ოს, ''m-e-tamaš-(n-)o-s''
+|-
+|2s || გითამაშ(ნ)ია''g-i-tamaš-(n-)i-a'' || გეთამაშ(ნ)ა, ''g-e-tamaš-(n-)a'' || გეთამაშ(ნ)ოს, ''g-e-tamaš-(n-)-o-s''
+|-
+|3s || უთამაშ(ნ)ია, ''u-tamaš-(n-)i-a'' || ეთამაშ(ნ)ა, ''e-tamaš-(n-)a'' || ეთამაშ(ნ)ოს, ''e-tamaš-(n-)-o-s''
+|-
+|1p || გვითამაშ(ნ)ია, ''gv-i-tamaš-(n-)-i-a'' || გვეთამაშ(ნ)ა, ''gv-e-tamaš-(n-)a'' || გვეთამაშ(ნ)ოს, ''gv-e-tamaš-(n-)-o-s''
+|-
+|2p || გითამაშ(ნ)ია, ''g-i-tamaš-(n-)i-a-t'' || გეთამაშ(ნ)ათ, ''g-e-tamaš-(n-)a-t'' || გეთამაშ(ნ)ოს, ''g-e-tamaš-(n-)-o-t''
+|-
+|3p || უთამაშ(ნ)იათ, ''u-tamaš-(n-)i-a-t'' || ეთამაშ(ნ)ათ, ''e-tamaš-(n-)a-t'' || ეთამაშ(ნ)ოს, ''e-tamaš-(n-)-o-t''
+|}
+
+==Class 4 (indirect or 'inversion' verbs)==
+*This class of verb is known as indirect or 'inverted' as it marks the logical subject with the indirect object marker set (''m-'' set) and the direct object with the subject marker set (''v-'' set). Nouns are declined in agreement: the logical subject is in the dative, and object in the nominative (or sometimes genitive, as in ''gogo-s'' (dat.) ''ʒaɣl-is'' (gen.) ''e-šin-i-a'' - the girl is afraid of the dog).
+*Verbs in this class denote feelings, sensations and endurant states of being (see also stative verbs), including verbs such as ''q̇av'' - to have (X, animate), ''kv'' - to have (X, inanimate) ''q̇var'' - to love and ''nd'' - to want.
+*Class 4 verbs also include 'desideratives' (verbs of desiring), created using the circumfix ''e-…-eb'' (compare ''ceḳv-av-s'' 'he dances' and ''e-ceḳv-eb-a'' 'he feels like dancing').
+
+The verb paradigm follows. For simplicity, the verb form always assumes a 3rd person singular object:
+
+'''Verb root'''
+
+ყვარ, ''q̇var'' - to love
+
+'''Present subseries'''
+
+The verb takes the 'subjective' versioniser ''i-'' in the 1st and 2nd persons, 'objective' ''u-'' in the 3rd person. Note the ending of the 2nd and 3rd person plural (subject) marker ''-t'' takes precedence over the 3rd person singular (object) marker ''-s'':
+
+{| class="wikitable" style="text-align:center;"
+!&nbsp;
+!Present indicative
+!Imperfect
+!Present subjunctive
+|-
+|1s || მიყვარს, ''m-i-q̇var-s'' || მიყვარდა, ''m-i-q̇var-d-a'' || მიყვარდეს, ''m-i-q̇var-d-e-s''
+|-
+|2s || გიყვარს, ''g-i-q̇var-s'' || გიყვარდა, ''g-i-q̇var-d-a'' || გიყვარდეს, ''g-i-q̇var-d-e-s''
+|-
+|3s || უყვარს, ''u-q̇var-s'' || უყვარდა, ''u-q̇var-d-a'' || უყვარდეს, ''u-q̇var-d-e-s''
+|-
+|1p || გვიყვარს, ''gv-i-q̇var-s'' || გვიყვარდა, ''gv-i-q̇var-d-a'' || გვიყვარდეს, ''gv-i-q̇var-d-e-s''
+|-
+|2p || გიყვართ, ''g-i-q̇var-t'' || გიყვარდათ, ''g-i-q̇var-d-a-t'' || გიყვარდეთ, ''g-i-q̇var-d-e-t''
+|-
+|3p || უყვართ, ''u-q̇var-t'' || უყვარდათ, ''u-q̇var-d-a-t'' || უყვარდეთ, ''u-q̇var-d-e-t''
+|}
+
+'''Future subseries'''
+
+Here the verb forms its screeves by using a pre-radical vowel ''e-'', and the thematic suffix ''-eb'', in a way similar to the class 2 verbs (but without the preverb):
+
+{| class="wikitable" style="text-align:center;"
+!&nbsp;
+!Future indicative
+!Conditional
+!Future subjunctive
+|-
+|1s || მეყვარება, ''m-e-q̇var-eb-a'' || მეყვარებოდა, ''m-e-q̇var-eb-od-a'' || მეყვარებოდეს, ''m-e-q̇var-eb-od-e-s''
+|-
+|2s || გეყვარება, ''g-e-q̇var-eb-a'' || გეყვარებოდა, ''g-e-q̇var-eb-od-a'' || გეყვარებოდეს, ''g-e-q̇var-eb-od-e-s''
+|-
+|3s || ეყვარება, ''e-q̇var-eb-a'' || ეყვარებოდა, ''e-q̇var-eb-od-a'' || ეყვარებოდეს, ''e-q̇var-eb-od-e-s''
+|-
+|1p || გვეყვარება, ''gv-e-q̇var-eb-a'' || გვეყვარებოდა, ''gv-e-q̇var-eb-od-a'' || გვეყვარებოდეს, ''gv-e-q̇var-eb-od-e-s''
+|-
+|2p || გეყვარებათ, ''g-e-q̇var-eb-a-t'' || გეყვარებოდათ, ''g-e-q̇var-eb-od-a-t'' || გეყვარებოდეთ, ''g-e-q̇var-eb-od-e-t''
+|-
+|3p || ეყვარებათ, ''e-q̇var-eb-a-t'' || ეყვარებოდათ, ''e-q̇var-eb-od-a-t'' || ეყვარებოდეთ, ''e-q̇var-eb-od-e-t''
+|}
+
+'''Aorist series'''
+
+Since the verb does not have an aorist form, and uses the imperfect instead (like many other class 4 verbs), the aorist forms of ''šegiq̇vardeba'' 'you'll fall in love with X' are substituted:
+
+{| class="wikitable" style="text-align:center;"
+!&nbsp;
+!Aorist indicative
+!Optative
+|-
+|1s || შემიყვარდა, ''še-m-i-q̇var-d-a'' || შემიყვარდეს, ''še-m-i-q̇var-d-e-s''
+|-
+|2s || შეგიყვარდა, ''še-g-i-q̇var-d-a'' || შეგიყვარდეს, ''še-g-i-q̇var-d-e-s''
+|-
+|3s || შეუყვარდა, ''še-u-q̇var-d-a'' || შეუყვარდეს, ''še-u-q̇var-d-e-s''
+|-
+|1p || შეგვიყვარდა, ''še-gv-i-q̇var-d-a'' || შეგვიყვარდეს, ''še-gv-i-q̇var-d-e-s''
+|-
+|2p || შეგიყვარდათ, ''še-g-i-q̇var-d-a-t'' || შეგიყვარდეთ, ''še-g-i-q̇var-d-e-t''
+|-
+|3p || შეუყვარდათ, ''še-u-q̇var-d-a-t'' || შეუყვარდეთ, ''še-u-q̇var-d-e-t''
+|}
+
+'''Perfect series'''
+
+This series is not especially consistent: the perfect screeve uses versionisers before the root, whereas the pluperfect and perfect subjunctive screeves take no versioniser. The series forms using the suffix ''-eb'', with ''-od'' as a further suffix in the pluperfect and perfect subjunctive screeves.
+
+{| class="wikitable" style="text-align:center;"
+!&nbsp;
+!Perfect
+!Pluperfect
+!Perfect subjunctive
+|-
+|1s || მყვარებია, ''m-q̇var-eb-i-a'' || მყვარებოდა, ''m-q̇var-eb-od-a'' || მყვარებოდეს, ''m-q̇var-eb-od-e-s''
+|-
+|2s || გყვარებია, ''g-q̇var-eb-i-a'' || გყვარებოდა, ''g-q̇var-eb-od-a'' || გყვარებოდეს, ''g-q̇var-eb-od-e-s''
+|-
+|3s || ჰყვარებია, ''h-q̇var-eb-i-a'' || ჰყვარებოდა, ''h-q̇var-eb-od-a'' || ჰყვარებოდეს, ''h-q̇var-eb-od-e-s''
+|-
+|1p || გვყვარებია, ''gv-q̇var-eb-i-a'' || გვყვარებოდა, ''gv-q̇var-eb-od-a'' || გვყვარებოდეს, ''gv-q̇var-eb-od-e-s''
+|-
+|2p || გყვარებიათ, ''g-q̇var-eb-i-a-t'' || გყვარებოდათ, ''g-q̇var-eb-od-a-t'' || გყვარებოდეთ, ''g-q̇var-eb-od-e-t''
+|-
+|3p || ჰყვარებიათ, ''h-q̇var-eb-i-a-t'' || ჰყვარებოდათ, ''h-q̇var-eb-od-a-t'' || ჰყვარებოდეთ, ''h-q̇var-eb-od-e-t''
+|}
+
+'''N.B.''' It is important to bear in mind that each verb form given in the tables has a further five forms corresponding to the 1st and 2nd person singular direct objects, and the 1st, 2nd and 3rd person plural direct objects, giving a theoretical total of 396 bi-personal forms! In practice however these forms are not always distinct (for example the plurality of the 3rd person is not always present in the form). For further discussion, see 'Direct and indirect objects'.
+
+==Direct and indirect objects==
+* The verb -''c̣er''- (წერ), "to write," (transitive verb)
+** Simplest, we have: ''v-c̣er'' (ვწერ), ("I am writing (it)") and ''c̣er-s'' (წერს), ("he/she is writing (it)").
+** Changing the version, the grammatical feature indicated by the versioner/version vowel, changes the role of the indirect object: ''v-c̣er'' is in the neutral version, which is the default version for most Class I verbs, and is indicated either by a zero marker or an -''a''- versioner, depending on the verb. In the objective version (which for Class I verbs usually changes the role of the indirect object to that of benefactor of the action or possessor of the direct object), the version vowel is -''i''- for 1st and 2nd person indirect objects and -''u''- for 3rd person indirect objects. Therefore, we have ''v-'''u'''-c̣er'' (ვუწერ) for "I am writing it for/on behalf of him/her".<ref name="grammar" />
+** In order to say "I am writing to you (singular)", we have to remember that ''you'' is the indirect object in this sentence. As stated in the verbal system, verbs which employ the ''v''- set marker to indicate the subject, use the ''m''- set marker to indicate the direct or the indirect object. Looking at the table of the ''m''- set marker, we see that the prefixal nominal marker for the second person singular is '''''g'''''-. Therefore, "I am writing to you (singular)" in Georgian is '''''g'''-c̣er'' (გწერ). If we want to say, "I am writing to you (plural)", then we have '''''g'''-c̣er-'''t''''' (გწერთ).
+** Note, however, that some ambiguities arise, as the verb encapsulates the indirect object. While '''''g'''-c̣er-'''t''''' (გწერთ) means "I am writing to you (plural)," it could also mean "he/she is writing to you (plural). This is because the plural indirect object "you (plural)" requires both the prefixal nominal marker ''g''- and the plural marker -''t''. The rule in Georgian is that, if a consonant plural marker (-''t'') is to be attached to the verb complex, another suffixal consonant nominal marker has to be dropped. For example, one cannot say ''g-c̣er-'''s'''-'''t''''' ("he/she is writing to you (plural)") in Georgian. Therefore, the verb, in cases like this, fails to indicate whether the performer of the action is the first person or the third person. One, then, has to consider the role of the verb in the entire sentence to understand the exact meaning of the verb.
+* The verb -''nd''- (ნდ), "to want," belongs to indirect verb class (class 4).
+** Simplest, we have ''m-i-nd-a'' (მინდა), "I want," and ''u-nd-a'' (უნდა), "he/she wants."
+** When we want to construct "he wants me," '''''me''''' is the direct object. Since the verb "want" requires the ''m''- set marker for the subject, it requires the ''v''- set for the object (this is exactly the opposite in verb "write"). To do this, we need to put both the letter ''v''- at the beginning of the verb and we need to add the auxiliary verb -''var'' to the end (as auxiliary verbs are needed in the present and perfective screeves of indirect verbs when the direct object is the first or the second person). Therefore, we have '''''v'''-u-nd-i-'''var''''' (ვუნდივარ). The letter -''u''- right after the letter ''v''- establishes the meaning that it is the third person who wants. To say, "you want me", we then have ''g-'''i'''-nd-i-var'' (გინდივარ). Here, the -'''''i'''''- means that it is the second person who wants.
+** Note that "he/she wants me" and "they want me" are both the same in Georgian: ''v-u-nd-i-var'' (ვუნდივარ). If one says, ''v-u-nd-i-var-'''t''''' (ვუნდივართ), this rather means "he/she wants '''us'''." This is because the plurality of the subject is not reflected in the verbs that use the ''m''- set marker when the direct object is either the first or the second person.
+** The Georgian language has perhaps one of the most complicated plural subject-verb and object-verb agreement systems. Even native speakers do not seem to have a consensus on the reflection of plurality to the verb. One general rule is that in the verbs that employ the ''v''- set nominal marker, the priority of indicating the plurality of the subject is higher than that of the object. In the verbs that use the ''m''- set nominal marker, this is reversed (just like everything else is reversed). That is why in the example of ''v-u-nd-i-var-'''t''''' (ვუნდივართ) the plural marker -'''''t''''' at the end refers to the plurality of the object rather than the plurality of the subject.
+
+==Preverbs==
+Preverbs in Georgian can either add directionality to a verb, or can change the meaning of the verb entirely. It is also important to use the appropriate versioner in each case.
+
+Since preverbs are absent in the present series, it is important to consider the role of the verb in the context of the entire sentence as the verb by itself could convey any meaning in the present screeves.
+
+* Root ''gh'' (ღ):
+**'''''a'''-gh-eb-a'' (აღება), versioner: -'''''i''''' — "raise, lift up" (generally: '''upward motion''')
+**'''''amo'''-gh-eb-a'' (ამოღება), versioner: -'''''i''''' — "take out"
+**'''''ga'''-gh-eb-a'' (გაღება), versioner: -'''''a''''' — "open"
+**'''''gadmo'''-gh-eb-a'' (გადმოღება), versioner: -'''''i''''' — "take down"
+**'''''gamo'''-gh-eb-a'' (გამოღება), versioner: -'''''i''''' — "give forth"
+**'''''mi'''-gh-eb-a'' (მიღება), versioner: -'''''i''''' — "receive"
+**'''''šemo'''-gh-eb-a'' (შემოღება), versioner: -'''''i''''' — "introduce"
+**'''''c̣amo'''-gh-eb-a'' (წამოღება), versioner: -'''''u''''' — "carry"
+* Root ''q̇r''- (ყრ):
+**'''''a'''''-''q̇r-a'' (აყრა), versioner: -'''''i''''' — "put forth, throw upward"
+**'''''ga'''''-''q̇r-a'' (გაყრა), versioner: -'''''u''''' — "stick, put something through"
+**'''''gada'''''-''q̇r-a'' (გადაყრა), versioner: none{{refn|group=note|name=first|When used to mean "throw down ''to someone''", the -''u'' versioner is required.}} — "throw down" (generally: '''downward motion''')
+**'''''gadmo'''''-''q̇r-a'' (გადმოყრა), V: -'''''a''''' — "cast down"
+**'''''da'''''-''q̇r-a'' (დაყრა), versioner: none — "scatter, drop"
+**'''''mo'''''-''q̇r-a'' (მოყრა), versioner: -'''''a''''' — "ask someone many questions"
+**'''''še'''''-''q̇r-a'' (შეყრა), versioner: none — "gather together"
+**'''''ča'''''-''q̇r-a'' (ჩაყრა), versioner: -'''''a''''' — "pour (onto someone's head)"
+* Root ''c̣er''- (წერ):
+**'''''da'''''-: ''da-c̣er-a'' (დაწერა) — "write"
+**'''''a'''('''gh''')''-: ''agh-c̣er-a'' (აღწერა) — "describe, description, census"
+**'''''amo'''''-: ''a-mo-c̣er-a'' (ამოწერა) — "write out, extract, sign off, deregister"
+**'''''ča'''''-: ''ča-c̣er-a'' (ჩაწერა) — "write into/onto (including files)"
+**'''''ča'''-'''mo'''''-: ''ča-mo-c̣er-a'' (ჩამოწერა) — "list (by writing), decommission"
+**'''''mi'''''-: ''mi-c̣er-a'' (მიწერა) — "write to someone"
+**'''''mi'''-'''mo'''''-: ''mi-mo-c̣er-a'' (მიმოწერა) — "correspondence, conversation (by post or mail)"
+**'''''gada'''''-: ''gada-c̣er-a'' (გადაწერა) — "copying text (or files) from one place to another"
+**'''''gad'''-'''mo'''''-: ''gad-mo-c̣er-a'' (გადმოწერა) — "copying/writing out text from its source; downloading files"
+**'''''ga'''''-: ''ga-c̣er-a'' (გაწერა) — "plan, stipulate"
+**'''''ga'''-'''mo'''''-: ''ga-mo-c̣er-a'' (გამოწერა) — "subscribe to (newspaper etc.); order, buy"
+**'''''c̣a'''''-: ''c̣a-c̣er-a'' (წაწერა) — "making/writing a note (on the document)"

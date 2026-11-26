@@ -1,0 +1,139 @@
+# TextArt
+
+Text Art generator by Anbani.ge
+
+## Demo
+
+Play around with the derivative project here ჻ <https://anbani.ge/textart>
+
+Available as an `npx` executable as well!
+```bash
+npx anbani-textart "ჰელოუ" "Anbani Block Small"
+     your text -------^               ^--- optional font key
+```
+![npx demo](https://gach.ml/assets/projects/textart-vid.gif)
+
+
+## EZ Quickstart
+Play with this fiddle <https://jsfiddle.net/georgegach/g96dks5p/58/> or create `index.html` file, open in text editor and paste in this code below.
+```html
+<!DOCTYPE html>
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/anbani-textart@1.8.0/dist/TextArt.js"></script>
+</head>
+<body>
+    <pre id="art"></pre>
+
+    <script>
+        window.onload = () => {
+            document.querySelector('#art').textContent = window['anbani-textart'].generate(
+                'Anbani Block Regular',
+                'გამარჯობა'
+            )
+        }
+    </script>
+</body>
+</html>
+```
+Because `<pre/>` tags use `font-family: monospace` fonts by default, the textart will be rendered almost correctly. You could further tweak by adding `line-height: 1.2em` or even better by using `Fira Code` font.
+
+## Proper Installation
+
+```bash
+npm i anbani-textart --save
+```
+
+## Building from source
+
+Source in this checkout lives at `packages/js/textart`.
+From the monorepo checkout:
+
+```bash
+cd packages/js/textart
+npm install
+npm run build
+npm test
+```
+
+The complete package directory also builds with these commands when copied
+outside the monorepo. Webpack and the print step use committed package-local
+font definitions; package builds do not parse YAML, run root generators, or
+require a sibling package or Rust.
+
+For checkout source builds, use `dist/TextArt.js` or import the ESM default from
+`src/TextArt.mjs` in the package directory.
+
+## Usage
+
+```javascript
+import textArt from 'anbani-textart';
+
+textArt.keys
+// [
+//   'Anbani Braille',      'Anbani Braille Small',
+//   'Anbani Block Regular', 'Anbani Block Small',
+//   'Anbani Block Shadow',  'Anbani Block Shaded', 'Anbani Block Dotted',
+//   'Anbani Cross-Stitch',
+//   'Anbani Lines Double',  'Anbani Lines Thin',   'Anbani Lines Light',
+//   'Anbani Sample Style'
+// ]
+
+textArt.generate('Anbani Block Regular', 'გამარჯობა')
+
+  ████   ████▄ ██████  ████▄ ███████   ██   ███████  █▄▄    ████▄
+    ██      ██     ██     ██ ██      ▀▀██▀▀ ██ █ ██   ██       ██
+ ██████     ██ ██████     ██ ███████   ▀▀██ ██ ▀ ██ ██████     ██
+ ██  ██ ▄▄  ██ ██  ██ ▄▄  ██ ██ █ ██ ▄▄  ██ ██   ██ ██  ██ ▄▄  ██
+ ██████ ██████ ██████ ██████ ██   ██ ██████ ██   ██ ██████ ██████
+
+textArt.generate('Anbani Block Small', 'მაინც გავფრინდებით')
+
+▀▀█  ▀█ █▀█ █▀▀ █▝█   ▝█   ▀█ █▀█ ▛▛█ █▀▀▀ █▀█ █▀▀ █▀█ █▀█ ▝▆  █▀█ █▜▛█
+█▀█   █ █ █ █▀█ █▝█   █▀█   █  ▝█ ▙▌█ █▜▛█ █ █ █▀█ █▄█   █ █▀█ █ █ █▐▌█
+█▄█ █▄█ █ █ █▄█ █▄█   █▄█ █▄█ █▄█ ▆▄█ █▝▘█ █ █ █▄█ █▄▄ █▄█ █▄█ █ █ █▟▌█
+
+textArt.generate('Anbani Block Shadow', 'ანბანი')
+
+ ████▄  ██████   █▄▄     ████▄  ██████  ██████  
+  ░░██░ ██░░░░░   ██░     ░░██░ ██░░░░░ ██░░██░
+    ██░ ██████  ██████      ██░ ██████  ██░ ██░
+▄▄  ██░ ██░░██░ ██░░██░ ▄▄  ██░ ██░░██░ ██░ ██░
+██████░ ██████░ ██████░ ██████░ ██████░ ██░ ██░
+ ░░░░░░  ░░░░░░  ░░░░░░  ░░░░░░  ░░░░░░  ░░  ░░
+
+textArt.generate('Anbani Block Shaded', 'ანბანი')
+
+ ░░░░░ ░░░░░░  ░░░    ░░░░░ ░░░░░░ ░░░░░░
+    ▒▒ ▒▒       ▒▒       ▒▒ ▒▒     ▒▒  ▒▒
+    ▓▓ ▓▓▓▓▓▓ ▓▓▓▓▓▓     ▓▓ ▓▓▓▓▓▓ ▓▓  ▓▓
+▓▓  ▓▓ ▓▓  ▓▓ ▓▓  ▓▓ ▓▓  ▓▓ ▓▓  ▓▓ ▓▓  ▓▓
+██████ ██████ ██████ ██████ ██████ ██  ██
+
+textArt.generate('Anbani Block Dotted', 'ანბანი')
+
+ ●●●●· ●●●●●●  ●··    ●●●●· ●●●●●● ●●●●●●
+    ●● ●●       ●●       ●● ●●     ●●  ●●
+    ●● ●●●●●● ●●●●●●     ●● ●●●●●● ●●  ●●
+··  ●● ●●  ●● ●●  ●● ··  ●● ●●  ●● ●●  ●●
+●●●●●● ●●●●●● ●●●●●● ●●●●●● ●●●●●● ●●  ●●
+
+textArt.generate('Anbani Cross-Stitch', 'ანბანი')
+
+ ××××· ××××××  ×··    ××××· ×××××× ××××××
+    ×× ××       ××       ×× ××     ××  ××
+    ×× ×××××× ××××××     ×× ×××××× ××  ××
+··  ×× ××  ×× ××  ×× ··  ×× ××  ×× ××  ××
+×××××× ×××××× ×××××× ×××××× ×××××× ××  ××
+
+textArt.fonts['Anbani Block Regular'].author
+// Giorgi Gachechiladze
+
+textArt.fonts['Anbani Block Regular'].contact
+// https://github.com/georgegach
+```
+
+Alternatively you can import `anbani-textart` in `CommonJS` enviroment as well:
+
+```javascript
+const textArt = require('anbani-textart')
+```

@@ -1,0 +1,19 @@
+[package]
+name = "anbani-mcp"
+description = "MCP server for anbani (JSON-RPC over stdio): every toolkit capability as a tool; replaces Anbani/mcp"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+include = ["src/**", "LICENSE", "NOTICE"]
+
+[dependencies]
+anbani-api = { workspace = true }
+anbani-core = { workspace = true, features = ["std"] }
+anbani-spell = { workspace = true }
+serde_json = { workspace = true }
+
+[lints]
+workspace = true

@@ -1,0 +1,17 @@
+[package]
+name = "anbani-api"
+description = "One JSON-in/JSON-out entry point over anbani-core: what every binding (Python, Node, C, MCP) and the golden suite call"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+include = ["src/**", "tests/**", "LICENSE", "NOTICE"]
+
+[dependencies]
+anbani-core = { workspace = true, features = ["std", "legacy"] }
+serde_json = { workspace = true }
+
+[lints]
+workspace = true

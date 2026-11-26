@@ -1,0 +1,57 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "anbani"
+version = "4.0.0"
+authors = [{name = "George Gach", email = "georgegach@outlook.com"}]
+description = "Georgian alphabet and language utilities for Natural Language Processing, script conversion and more."
+readme = {file = "README.md", content-type = "text/markdown"}
+license = {text = "GPL"}
+dependencies = []
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Operating System :: OS Independent",
+]
+
+[project.optional-dependencies]
+pdf = ["pymupdf"]
+dev = ["pytest", "pytest-cov"]
+
+[project.scripts]
+anbani = "anbani.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/Anbani/anbani/tree/main/packages/py/anbani"
+Repository = "https://github.com/Anbani/anbani"
+Issues = "https://github.com/Anbani/anbani/issues"
+
+[tool.setuptools]
+include-package-data = true
+license-files = ["LICENSE", "NOTICE"]
+
+[tool.setuptools.packages.find]
+include = ["anbani*"]
+
+[tool.setuptools.package-data]
+anbani = ["data/*.json", "data/*.csv"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.coverage.run]
+source = ["anbani"]
+omit = ["anbani/data/*"]
+
+[tool.coverage.report]
+show_missing = true
+exclude_lines = [
+    "pragma: no cover",
+    "raise ImportError",
+]

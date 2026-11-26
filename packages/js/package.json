@@ -1,0 +1,15 @@
+{
+  "name": "anbani-monorepo",
+  "private": true,
+  "workspaces": [
+    "anbani",
+    "textart"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces",
+    "test": "npm test --workspaces"
+  },
+  "devDependencies": {
+    "yaml": "^2.1.1"
+  }
+}

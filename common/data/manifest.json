@@ -1,0 +1,386 @@
+{
+  "schema": 1,
+  "sources": [
+    {
+      "path": "data/scripts/letters.json",
+      "license": "GPL-3.0-only",
+      "origin": {
+        "repo": "Anbani/anbani.js",
+        "commit": "879e08c9f07af12c574644238590eec31b4611e1",
+        "path": "src/lib/data.mjs",
+        "blob": "d666a5b7fdf5798ddf8e87c61a5e3cef426ba077"
+      },
+      "consumers": [
+        "js",
+        "python",
+        "rust"
+      ],
+      "notice": "Ordered arrays and regex sources extracted without Unicode normalization; citations in data/scripts/README.md."
+    },
+    {
+      "path": "data/scripts/morse.json",
+      "license": "GPL-3.0-only",
+      "origin": {
+        "repo": "Anbani/anbani.js",
+        "commit": "a44d890ee1804d5ec6a9b08eb903da7fe70c97cf",
+        "path": "src/lib/morse-layout.mjs",
+        "blob": "3968b5371674e1114fd3831aa7d2c31d7dd36436"
+      },
+      "consumers": [
+        "js",
+        "python",
+        "rust"
+      ],
+      "notice": "Proposed Kartvelian Morse layout (anbani.js 3.5.0), serialized as JSON without reordering or Unicode normalization."
+    },
+    {
+      "path": "data/nlp/georgian_contractions.csv",
+      "license": "GPL (existing Python metadata; GPLv3 classifier)",
+      "origin": {
+        "repo": "Anbani/anbani.py",
+        "commit": "9b79bf0244c3f2ec3bdd5b6ff281816d57034e5b",
+        "path": "anbani/data/georgian_contractions.csv",
+        "blob": "5f7ece5613a534a8654aa83c02d236f6861888af"
+      },
+      "consumers": [
+        "python",
+        "rust",
+        "js"
+      ]
+    },
+    {
+      "path": "data/nlp/ambigram_nc5_len7.csv",
+      "license": "GPL (existing Python metadata; GPLv3 classifier)",
+      "origin": {
+        "repo": "Anbani/anbani.py",
+        "commit": "9b79bf0244c3f2ec3bdd5b6ff281816d57034e5b",
+        "path": "anbani/data/ambigram_nc5_len7.csv",
+        "blob": "cf795a65f6dd412f00496ad66c941cb038d3bf2a"
+      },
+      "consumers": [
+        "python",
+        "rust",
+        "js"
+      ]
+    },
+    {
+      "path": "data/nlp/ambigram_nc1_len10.csv",
+      "license": "GPL (existing Python metadata; GPLv3 classifier)",
+      "origin": {
+        "repo": "Anbani/anbani.py",
+        "commit": "9b79bf0244c3f2ec3bdd5b6ff281816d57034e5b",
+        "path": "anbani/data/ambigram_nc1_len10.csv",
+        "blob": "301caae935e8d110a80a89df042871b2d3214829"
+      },
+      "consumers": [
+        "python",
+        "rust"
+      ]
+    },
+    {
+      "path": "data/textart/BlockFont/BlockBraille.yml",
+      "license": "GPL-3 (YAML declaration); GPL-3.0-or-later (package declaration)",
+      "origin": {
+        "repo": "Anbani/TextArt",
+        "commit": "2cd6fe429b0bee07aea29e5c9bce3f96be3dce84",
+        "path": "src/fonts/BlockFont/BlockBraille.yml",
+        "blob": "0eb1ceb2f9ebfd595c24a6eaf22b187b27c20d22"
+      },
+      "consumers": [
+        "textart",
+        "rust"
+      ],
+      "notice": "Giorgi Gachechiladze / Anbani.ge; original author/license metadata retained in definitions."
+    },
+    {
+      "path": "data/textart/BlockFont/BlockBrailleSmall.yml",
+      "license": "GPL-3 (YAML declaration); GPL-3.0-or-later (package declaration)",
+      "origin": {
+        "repo": "Anbani/TextArt",
+        "commit": "2cd6fe429b0bee07aea29e5c9bce3f96be3dce84",
+        "path": "src/fonts/BlockFont/BlockBrailleSmall.yml",
+        "blob": "980b866ce5ef6aab7fbc64d74e259f3ca8b1e1d8"
+      },
+      "consumers": [
+        "textart",
+        "rust"
+      ],
+      "notice": "Giorgi Gachechiladze / Anbani.ge; original author/license metadata retained in definitions."
+    },
+    {
+      "path": "data/textart/BlockFont/BlockCrossStitch.yml",
+      "license": "GPL-3 (YAML declaration); GPL-3.0-or-later (package declaration)",
+      "origin": {
+        "repo": "Anbani/TextArt",
+        "commit": "2cd6fe429b0bee07aea29e5c9bce3f96be3dce84",
+        "path": "src/fonts/BlockFont/BlockCrossStitch.yml",
+        "blob": "5aea98a095f89fdd1ef7736e9441edfc761a8f16"
+      },
+      "consumers": [
+        "textart",
+        "rust"
+      ],
+      "notice": "Giorgi Gachechiladze / Anbani.ge; original author/license metadata retained in definitions."
+    },
+    {
+      "path": "data/textart/BlockFont/BlockDotted.yml",
+      "license": "GPL-3 (YAML declaration); GPL-3.0-or-later (package declaration)",
+      "origin": {
+        "repo": "Anbani/TextArt",
+        "commit": "2cd6fe429b0bee07aea29e5c9bce3f96be3dce84",
+        "path": "src/fonts/BlockFont/BlockDotted.yml",
+        "blob": "2871204a956f90e930b864ba624be7a877f60c96"
+      },
+      "consumers": [
+        "textart",
+        "rust"
+      ],
+      "notice": "Giorgi Gachechiladze / Anbani.ge; original author/license metadata retained in definitions."
+    },
+    {
+      "path": "data/textart/BlockFont/BlockRegular.yml",
+      "license": "GPL-3 (YAML declaration); GPL-3.0-or-later (package declaration)",
+      "origin": {
+        "repo": "Anbani/TextArt",
+        "commit": "2cd6fe429b0bee07aea29e5c9bce3f96be3dce84",
+        "path": "src/fonts/BlockFont/BlockRegular.yml",
+        "blob": "9909690142ad7f55fde89d9f1b9fa42841b9db9d"
+      },
+      "consumers": [
+        "textart",
+        "rust"
+      ],
+      "notice": "Giorgi Gachechiladze / Anbani.ge; original author/license metadata retained in definitions."
+    },
+    {
+      "path": "data/textart/BlockFont/BlockRounded.yml",
+      "license": "GPL-3 (YAML declaration); GPL-3.0-or-later (package declaration)",
+      "origin": {
+        "repo": "Anbani/TextArt",
+        "commit": "2cd6fe429b0bee07aea29e5c9bce3f96be3dce84",
+        "path": "src/fonts/BlockFont/BlockRounded.yml",
+        "blob": "6dff0a3d786b52115f984d297a4ddf4fa98b026b"
+      },
+      "consumers": [
+        "textart",
+        "rust"
+      ],
+      "notice": "Giorgi Gachechiladze / Anbani.ge; original author/license metadata retained in definitions."
+    },
+    {
+      "path": "data/textart/BlockFont/BlockShaded.yml",
+      "license": "GPL-3 (YAML declaration); GPL-3.0-or-later (package declaration)",
+      "origin": {
+        "repo": "Anbani/TextArt",
+        "commit": "2cd6fe429b0bee07aea29e5c9bce3f96be3dce84",
+        "path": "src/fonts/BlockFont/BlockShaded.yml",
+        "blob": "dd0a8d5bf3190d046a1a13c8fcfe5651404288c4"
+      },
+      "consumers": [
+        "textart",
+        "rust"
+      ],
+      "notice": "Giorgi Gachechiladze / Anbani.ge; original author/license metadata retained in definitions."
+    },
+    {
+      "path": "data/textart/BlockFont/BlockShadow.yml",
+      "license": "GPL-3 (YAML declaration); GPL-3.0-or-later (package declaration)",
+      "origin": {
+        "repo": "Anbani/TextArt",
+        "commit": "2cd6fe429b0bee07aea29e5c9bce3f96be3dce84",
+        "path": "src/fonts/BlockFont/BlockShadow.yml",
+        "blob": "9ba6655cf9ed8d6aa609a78c601768960c16ad16"
+      },
+      "consumers": [
+        "textart",
+        "rust"
+      ],
+      "notice": "Giorgi Gachechiladze / Anbani.ge; original author/license metadata retained in definitions."
+    },
+    {
+      "path": "data/textart/BlockFont/BlockSmall.yml",
+      "license": "GPL-3 (YAML declaration); GPL-3.0-or-later (package declaration)",
+      "origin": {
+        "repo": "Anbani/TextArt",
+        "commit": "2cd6fe429b0bee07aea29e5c9bce3f96be3dce84",
+        "path": "src/fonts/BlockFont/BlockSmall.yml",
+        "blob": "2477c60ab6c47ba40c488ae5aead5396d93c5990"
+      },
+      "consumers": [
+        "textart",
+        "rust"
+      ],
+      "notice": "Giorgi Gachechiladze / Anbani.ge; original author/license metadata retained in definitions."
+    },
+    {
+      "path": "data/textart/LineFont/LinesDouble.yml",
+      "license": "GPL-3 (YAML declaration); GPL-3.0-or-later (package declaration)",
+      "origin": {
+        "repo": "Anbani/TextArt",
+        "commit": "2cd6fe429b0bee07aea29e5c9bce3f96be3dce84",
+        "path": "src/fonts/LineFont/LinesDouble.yml",
+        "blob": "f5559dbaea2ea62865000860e3a83a23deaef2a2"
+      },
+      "consumers": [
+        "textart",
+        "rust"
+      ],
+      "notice": "Giorgi Gachechiladze / Anbani.ge; original author/license metadata retained in definitions."
+    },
+    {
+      "path": "data/textart/LineFont/LinesLight.yml",
+      "license": "GPL-3 (YAML declaration); GPL-3.0-or-later (package declaration)",
+      "origin": {
+        "repo": "Anbani/TextArt",
+        "commit": "2cd6fe429b0bee07aea29e5c9bce3f96be3dce84",
+        "path": "src/fonts/LineFont/LinesLight.yml",
+        "blob": "60972d7439883382dc7c6ee08e01e7fc75847a4f"
+      },
+      "consumers": [
+        "textart",
+        "rust"
+      ],
+      "notice": "Giorgi Gachechiladze / Anbani.ge; original author/license metadata retained in definitions."
+    },
+    {
+      "path": "data/textart/LineFont/LinesThin.yml",
+      "license": "GPL-3 (YAML declaration); GPL-3.0-or-later (package declaration)",
+      "origin": {
+        "repo": "Anbani/TextArt",
+        "commit": "2cd6fe429b0bee07aea29e5c9bce3f96be3dce84",
+        "path": "src/fonts/LineFont/LinesThin.yml",
+        "blob": "b06ca8f0632f91834f29c8acd702581cdc041ae6"
+      },
+      "consumers": [
+        "textart",
+        "rust"
+      ],
+      "notice": "Giorgi Gachechiladze / Anbani.ge; original author/license metadata retained in definitions."
+    },
+    {
+      "path": "data/textart/collection.json",
+      "license": "GPL-3.0-or-later",
+      "origin": {
+        "repo": "Anbani/TextArt",
+        "commit": "2cd6fe429b0bee07aea29e5c9bce3f96be3dce84",
+        "path": "src/lib/Collection.mjs",
+        "blob": "e4544027eae58c2ccc7c1344cf22c859482ce549"
+      },
+      "consumers": [
+        "textart",
+        "rust"
+      ],
+      "notice": "Ordered public selection; Rounded remains defined but unselected; SampleFont remains algorithmic."
+    },
+    {
+      "path": "data/phon/hyph-ka.tex",
+      "license": "MIT",
+      "consumers": [
+        "rust"
+      ],
+      "notice": "Copyright (C) 2013 Levan Shoshiashvili; hyph-utf8 Georgian version 0.3, upstream b0c89cd (2021-10-14); header and original patterns preserved."
+    },
+    {
+      "path": "data/morph/georgian-conjugation.wiki",
+      "license": "CC-BY-SA-4.0",
+      "consumers": [
+        "rust"
+      ],
+      "notice": "Wikipedia contributors, Georgian conjugation revision 1367920251; original revision URL retained in source. Generated adaptation records modifications in docs/SOURCES.md."
+    },
+    {
+      "path": "data/morph/wiktionary-verbs.tsv",
+      "license": "CC-BY-SA-4.0",
+      "consumers": [
+        "rust"
+      ],
+      "notice": "Wiktionary contributors; page/revision attribution per row and generated lemma. See https://creativecommons.org/licenses/by-sa/4.0/."
+    },
+    {
+      "path": "data/legacy/codepages.tsv",
+      "license": "Factual mappings (source citations retained; no font binaries)",
+      "consumers": [
+        "rust"
+      ],
+      "notice": "Original source revisions, hashes and attribution are preserved in the TSV header."
+    },
+    {
+      "path": "data/legacy/fonts.tsv",
+      "license": "Factual mappings (source citations retained; no font binaries)",
+      "consumers": [
+        "rust"
+      ],
+      "notice": "Original source revisions, hashes and attribution are preserved in the TSV header."
+    },
+    {
+      "path": "data/legacy/layouts.tsv",
+      "license": "Factual mappings (source citations retained; no font binaries)",
+      "consumers": [
+        "rust"
+      ],
+      "notice": "Original source revisions, hashes and attribution are preserved in the TSV header."
+    },
+    {
+      "path": "data/legacy/trigrams-ka.tsv",
+      "license": "GPL-3 (prototype wordlist compiled from public sources)",
+      "consumers": [
+        "rust"
+      ],
+      "notice": "Original source revisions, hashes and attribution are preserved in the TSV header."
+    },
+    {
+      "path": "data/legacy/trigrams-en.tsv",
+      "license": "Public domain (Webster 1934 / FreeBSD web2, as cited upstream)",
+      "consumers": [
+        "rust"
+      ],
+      "notice": "Original source revisions, hashes and attribution are preserved in the TSV header."
+    },
+    {
+      "path": "data/vendor/homoglyph/homoglyph.json",
+      "license": "MIT",
+      "origin": {
+        "repo": "Anbani/homoglyph",
+        "commit": "121b2ce03cc688c023edd1467cf6141142ee71da",
+        "path": "dist/homoglyph.json",
+        "blob": "fd6450bbdfe0ad1f6ff3edbae2862196a72cebf3"
+      },
+      "sha256": "3cfc7c0b947527107b5c163f44fcc0ab6240d61017a0eb30c4279a8d0fdb821f",
+      "consumers": [
+        "rust"
+      ],
+      "notice": "Copyright (c) 2026 George Gach / Anbani. Only compiled output, metadata and license are vendored; no font/model/training data."
+    },
+    {
+      "path": "data/vendor/homoglyph/homoglyph.meta.json",
+      "license": "MIT",
+      "origin": {
+        "repo": "Anbani/homoglyph",
+        "commit": "121b2ce03cc688c023edd1467cf6141142ee71da",
+        "path": "dist/homoglyph.meta.json",
+        "blob": "9cbe20cc6c97629c102850fc3df025143336b814"
+      },
+      "sha256": "c805b1e2d911b8445c36b61c487df6eb7813accde5754698784b45b3b4ebf79a",
+      "consumers": [
+        "rust"
+      ],
+      "notice": "Copyright (c) 2026 George Gach / Anbani. Only compiled output, metadata and license are vendored; no font/model/training data."
+    },
+    {
+      "path": "data/vendor/homoglyph/LICENSE",
+      "license": "MIT",
+      "origin": {
+        "repo": "Anbani/homoglyph",
+        "commit": "121b2ce03cc688c023edd1467cf6141142ee71da",
+        "path": "LICENSE",
+        "blob": "a107b35fff405c504c40339ce49a6e9d9f1ac5a9"
+      },
+      "sha256": "d3cc778294387a0edf6ba5e0ff0d35ad08007ddf633a24d6b15a776f464376b5",
+      "consumers": [
+        "rust"
+      ],
+      "notice": "Copyright (c) 2026 George Gach / Anbani. Only compiled output, metadata and license are vendored; no font/model/training data."
+    }
+  ],
+  "publication_holds": []
+}

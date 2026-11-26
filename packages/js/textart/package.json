@@ -1,0 +1,50 @@
+{
+  "name": "anbani-textart",
+  "version": "1.8.1",
+  "description": "Text Art Generator by Anbani.ge",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Anbani/anbani.git",
+    "directory": "packages/js/textart"
+  },
+  "homepage": "https://anbani.ge/textart",
+  "bugs": "https://github.com/Anbani/anbani/issues",
+  "module": "src/TextArt.mjs",
+  "main": "dist/TextArt.js",
+  "files": [
+    "bin",
+    "src",
+    "dist",
+    "README.md",
+    "LICENSE",
+    "NOTICE"
+  ],
+  "scripts": {
+    "start": "node src/TextArt.mjs",
+    "build": "webpack --mode=production --node-env=production && npm run print",
+    "play": "node test/play.mjs",
+    "print": "node test/print.mjs",
+    "test": "mocha test/base.cjs test/base.mjs test/golden.test.mjs",
+    "prepublishOnly": "npm run build && npm test",
+    "release": "npm publish"
+  },
+  "bin": {
+    "anbani-textart": "bin/app.cjs",
+    "print": "bin/print.cjs"
+  },
+  "keywords": [
+    "anbani",
+    "georgian",
+    "ascii",
+    "text",
+    "art",
+    "generator"
+  ],
+  "author": "Giorgi Gachechiladze (@GEORGEGACH)",
+  "license": "GPL-3.0-or-later",
+  "devDependencies": {
+    "mocha": "^10.0.0",
+    "webpack": "^5.73.0",
+    "webpack-cli": "^4.10.0"
+  }
+}

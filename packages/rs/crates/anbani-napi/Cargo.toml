@@ -1,0 +1,42 @@
+[package]
+name = "anbani-napi"
+description = "Opt-in Node bindings for the anbani Georgian toolkit (napi-rs), published as @anbani/native"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+publish = false
+include = ["src/**", "build.rs", "LICENSE", "NOTICE"]
+
+[lib]
+crate-type = ["cdylib"]
+test = false
+doctest = false
+
+[dependencies]
+anbani-api = { workspace = true }
+anbani-core = { workspace = true, features = ["std"] }
+napi = { version = "3", default-features = false, features = ["napi6", "serde-json"] }
+napi-derive = "3"
+serde_json = { workspace = true }
+
+[build-dependencies]
+napi-build = "2"
+
+[lints.rust]
+future-incompatible = { level = "warn", priority = 2 }
+nonstandard_style = { level = "deny", priority = 1 }
+unsafe_code = "deny"
+missing_docs = "warn"
+
+[lints.clippy]
+all = { level = "deny", priority = 10 }
+redundant_clone = { level = "deny", priority = 9 }
+manual_while_let_some = { level = "deny", priority = 4 }
+pedantic = { level = "warn", priority = 3 }
+module_name_repetitions = { level = "allow", priority = 5 }
+must_use_candidate = { level = "allow", priority = 5 }
+allow_attributes = { level = "deny", priority = 11 }
+allow_attributes_without_reason = { level = "deny", priority = 11 }

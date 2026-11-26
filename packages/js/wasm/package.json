@@ -1,0 +1,18 @@
+{
+  "name": "@anbani/wasm",
+  "version": "0.0.0",
+  "description": "anbani.rs in the browser and Node: Georgian scripts and language (WebAssembly); anbani.js-compatible core",
+  "license": "GPL-3.0-or-later",
+  "type": "module",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "files": ["index.js", "index.d.ts", "anbani_wasm.js", "anbani_wasm.d.ts", "anbani_wasm_bg.wasm", "anbani_wasm_bg.wasm.d.ts", "LICENSE", "NOTICE"],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Anbani/anbani.git",
+    "directory": "packages/js/wasm"
+  },
+  "bugs": {"url": "https://github.com/Anbani/anbani/issues"},
+  "publishConfig": {"access": "public"},
+  "sideEffects": false
+}

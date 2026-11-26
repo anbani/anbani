@@ -1,0 +1,17 @@
+{
+  "name": "@anbani/native",
+  "version": "4.0.0",
+  "description": "Independent opt-in Rust bindings for the anbani Georgian script and language toolkit",
+  "license": "GPL-3.0-or-later",
+  "private": true,
+  "main": "index.cjs",
+  "types": "index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Anbani/anbani.git",
+    "directory": "packages/js/native"
+  },
+  "bugs": { "url": "https://github.com/Anbani/anbani/issues" },
+  "homepage": "https://github.com/Anbani/anbani/tree/main/packages/js/native",
+  "engines": { "node": ">=18" }
+}

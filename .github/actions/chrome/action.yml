@@ -1,0 +1,28 @@
+name: chrome
+description: Chrome for the installed-browser proof
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      run: |
+        set -euo pipefail
+        if command -v google-chrome >/dev/null || command -v google-chrome-stable >/dev/null; then
+          exit 0
+        fi
+        version="$(curl -fsSL --retry 3 --max-time 60 https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions.json \
+          | python -c 'import json, sys; print(json.load(sys.stdin)["channels"]["Stable"]["version"])')"
+        root="${RUNNER_TOOL_CACHE:?}/chrome-for-testing"
+        dir="$root/$version"
+        mkdir -p "$root"
+        (
+          flock -w 900 9
+          if [ ! -x "$dir/chrome-linux64/chrome" ]; then
+            tmp="$(mktemp -d "$root/.tmp.XXXXXX")"
+            curl -fsSL --retry 3 --max-time 600 -o "$tmp/chrome.zip" \
+              "https://storage.googleapis.com/chrome-for-testing-public/$version/linux64/chrome-linux64.zip"
+            unzip -q "$tmp/chrome.zip" -d "$tmp"
+            rm -rf "$dir" && mkdir -p "$dir" && mv "$tmp/chrome-linux64" "$dir/" && rm -rf "$tmp"
+          fi
+        ) 9>"$root/.lock"
+        "$dir/chrome-linux64/chrome" --version
+        echo "CHROME_BIN=$dir/chrome-linux64/chrome" >> "$GITHUB_ENV"

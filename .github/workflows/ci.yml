@@ -1,0 +1,348 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  CARGO_TERM_COLOR: always
+  PIP_DISABLE_PIP_VERSION_CHECK: "1"
+  PIP_DEFAULT_TIMEOUT: "60"
+  SEGMENT_DOWNLOAD_TIMEOUT_MINS: "3"
+
+jobs:
+  changes:
+    runs-on: ${{ vars.CI_RUNNER || 'ubuntu-24.04' }}
+    timeout-minutes: 5
+    outputs:
+      js: ${{ steps.select.outputs.js }}
+      python: ${{ steps.select.outputs.python }}
+      textart: ${{ steps.select.outputs.textart }}
+      rust: ${{ steps.select.outputs.rust }}
+      bindings: ${{ steps.select.outputs.bindings }}
+      native: ${{ steps.select.outputs.native }}
+      archives: ${{ steps.select.outputs.archives }}
+      rust_archives: ${{ steps.select.outputs.rust_archives }}
+      browser: ${{ steps.select.outputs.browser }}
+      archive_packages: ${{ steps.select.outputs.archive_packages }}
+      selection: ${{ steps.select.outputs.selection }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Select affected consumers from immutable commits
+        id: select
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.sha }}
+          WITHOUT: ${{ vars.CI_WITHOUT }}
+        run: python packages/py/tools/ci.py changes --base "$BASE_SHA" --head "$HEAD_SHA" --without "$WITHOUT"
+
+  generation:
+    runs-on: ${{ vars.CI_RUNNER || 'ubuntu-24.04' }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - run: npm --prefix packages/js ci
+      - run: python packages/py/tools/gen.py --check && python packages/py/tools/versions.py
+      - name: Tooling behavior tests
+        run: python -m unittest discover -s packages/py/tools/tests -p 'test_*.py'
+
+  js:
+    needs: changes
+    if: needs.changes.outputs.js == 'true'
+    runs-on: ${{ vars.CI_RUNNER || 'ubuntu-24.04' }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ["18", "20", "22"]
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node }}
+      - run: npm --prefix packages/js ci
+      - run: npm --prefix packages/js run build --workspace=anbani
+      - run: npm --prefix packages/js run coverage --workspace=anbani
+
+  python:
+    needs: changes
+    if: needs.changes.outputs.python == 'true'
+    runs-on: ${{ vars.CI_RUNNER || 'ubuntu-24.04' }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.10", "3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install independent Python package and metadata tooling
+        run: python -m pip install build -e 'packages/py/anbani[pdf,dev]'
+      - name: Validate sdist and wheel metadata
+        run: |
+          python -m build --sdist --wheel --outdir "$RUNNER_TEMP/python-metadata" packages/py/anbani
+          python -m pip check
+      - name: Root-invoked suite with coverage
+        run: python -m pytest -c packages/py/anbani/pyproject.toml --cov=anbani --cov-report=term packages/py/anbani/tests
+      - name: Package-root suite
+        working-directory: packages/py/anbani
+        run: python -m pytest
+
+  textart:
+    needs: changes
+    if: needs.changes.outputs.textart == 'true'
+    runs-on: ${{ vars.CI_RUNNER || 'ubuntu-24.04' }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ["18", "20", "22"]
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node }}
+      - run: npm --prefix packages/js ci
+      - run: npm --prefix packages/js run build --workspace=anbani-textart
+      - name: ESM and CommonJS rendering goldens
+        run: npm --prefix packages/js test --workspace=anbani-textart
+      - name: Committed CDN distribution and generated fonts remain current
+        if: matrix.node == '22'
+        run: git diff --exit-code -- packages/js/textart/dist packages/js/textart/src/fonts packages/js/textart/src/lib
+
+  rust:
+    needs: changes
+    if: needs.changes.outputs.rust == 'true'
+    runs-on: ${{ vars.CI_RUNNER || 'ubuntu-24.04' }}
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - uses: ./.github/actions/rust
+        with:
+          targets: wasm32-unknown-unknown
+      - uses: actions/cache@v6
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            packages/rs/target
+          key: cargo-${{ runner.os }}-${{ runner.arch }}-${{ github.job }}-${{ hashFiles('packages/rs/Cargo.lock', 'packages/rs/rust-toolchain.toml') }}
+          restore-keys: cargo-${{ runner.os }}-${{ runner.arch }}-${{ github.job }}-
+      - name: Formatting
+        run: cd packages/rs && cargo fmt --all --check
+      - name: Strict clippy
+        run: cd packages/rs && cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+      - name: Workspace unit and golden behavior tests
+        run: cd packages/rs && cargo test --workspace --all-features --locked
+      - name: Core without default features
+        run: cd packages/rs && cargo build -p anbani-core --no-default-features --locked
+      - name: wasm32 target
+        run: cd packages/rs && cargo build -p anbani-wasm --target wasm32-unknown-unknown --release --locked
+      - name: Actual Rust CLI behavior
+        run: |
+          set -euo pipefail
+          cd packages/rs
+          cargo build -p anbani-cli --release --locked
+          b="$PWD/target/release/anbani"
+          test "$("$b" convert 'ანბანი' -f mkhedruli -t khutsuri)" = 'Ⴀⴌⴁⴀⴌⴈ'
+          test "$("$b" numeric 'ჩყმვ')" = 1846
+          test "$(printf '%s\n' gamarjoba | "$b" interpret)" = 'ᲒᲐᲛᲐᲠᲯᲝᲑᲐ'
+          test "$("$b" classify 'Ⴀⴀ')" = khutsuri
+          set +e
+          "$b" convert x -f klingon -t mtavruli
+          status=$?
+          set -e
+          test "$status" = 2
+
+  pure-archives:
+    needs: changes
+    if: needs.changes.outputs.archives == 'true'
+    runs-on: ${{ vars.CI_RUNNER || 'ubuntu-24.04' }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        package: ${{ fromJSON(needs.changes.outputs.archive_packages) }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "18"
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - run: python -m pip install build
+      - run: npm --prefix packages/js ci
+      - name: Detached source builds and real installed pure-package archives
+        env:
+          PACKAGE: ${{ matrix.package }}
+        run: python packages/py/tools/archive-smoke.py pure --package "$PACKAGE" --artifacts "$RUNNER_TEMP/artifacts/pure-$PACKAGE"
+      - uses: actions/upload-artifact@v6
+        with:
+          name: pure-${{ matrix.package }}-archives
+          path: ${{ runner.temp }}/artifacts/pure-${{ matrix.package }}/
+          if-no-files-found: error
+          retention-days: ${{ vars.CI_ARTIFACT_DAYS || 7 }}
+
+  rust-archives:
+    needs: changes
+    if: needs.changes.outputs.rust_archives == 'true'
+    runs-on: ${{ vars.CI_RUNNER || 'ubuntu-24.04' }}
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - uses: ./.github/actions/rust
+      - uses: actions/cache@v6
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            packages/rs/target
+          key: cargo-${{ runner.os }}-${{ runner.arch }}-${{ github.job }}-${{ hashFiles('packages/rs/Cargo.lock', 'packages/rs/rust-toolchain.toml') }}
+          restore-keys: cargo-${{ runner.os }}-${{ runner.arch }}-${{ github.job }}-
+      - name: Package all six crates with Cargo verification and test detached archives
+        run: python packages/py/tools/archive-smoke.py rust --artifacts "$RUNNER_TEMP/artifacts/rust"
+      - uses: actions/upload-artifact@v6
+        with:
+          name: rust-crate-archives
+          path: ${{ runner.temp }}/artifacts/rust/
+          if-no-files-found: error
+          retention-days: ${{ vars.CI_ARTIFACT_DAYS || 7 }}
+
+  bindings:
+    needs: changes
+    if: needs.changes.outputs.bindings == 'true' || needs.changes.outputs.native == 'true'
+    runs-on: ${{ vars.CI_RUNNER || 'ubuntu-24.04' }}
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - run: python -m pip install build maturin==1.16.0
+      - run: npm --prefix packages/js ci
+      - uses: ./.github/actions/rust
+        with:
+          targets: wasm32-unknown-unknown
+      - uses: actions/cache@v6
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            packages/rs/target
+          key: cargo-${{ runner.os }}-${{ runner.arch }}-${{ github.job }}-${{ hashFiles('packages/rs/Cargo.lock', 'packages/rs/rust-toolchain.toml') }}
+          restore-keys: cargo-${{ runner.os }}-${{ runner.arch }}-${{ github.job }}-
+      - name: Installed wheel, native npm, wasm npm and C ABI conformance
+        run: python packages/py/tools/archive-smoke.py bindings --artifacts "$RUNNER_TEMP/artifacts/bindings"
+      - uses: actions/upload-artifact@v6
+        with:
+          name: host-binding-archives
+          path: ${{ runner.temp }}/artifacts/bindings/
+          if-no-files-found: error
+          retention-days: ${{ vars.CI_ARTIFACT_DAYS || 7 }}
+
+  browser:
+    needs: changes
+    if: needs.changes.outputs.browser == 'true'
+    runs-on: ${{ vars.CI_RUNNER || 'ubuntu-24.04' }}
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - run: npm --prefix packages/js ci
+      - uses: ./.github/actions/rust
+        with:
+          targets: wasm32-unknown-unknown
+      - uses: actions/cache@v6
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            packages/rs/target
+          key: cargo-${{ runner.os }}-${{ runner.arch }}-${{ github.job }}-${{ hashFiles('packages/rs/Cargo.lock', 'packages/rs/rust-toolchain.toml') }}
+          restore-keys: cargo-${{ runner.os }}-${{ runner.arch }}-${{ github.job }}-
+      - uses: ./.github/actions/chrome
+      - name: Real browser using only installed UMD and wasm distributions
+        run: python packages/py/tools/archive-smoke.py browser --artifacts "$RUNNER_TEMP/artifacts/browser"
+      - uses: actions/upload-artifact@v6
+        with:
+          name: installed-browser-proof
+          path: ${{ runner.temp }}/artifacts/browser/
+          if-no-files-found: error
+          retention-days: ${{ vars.CI_ARTIFACT_DAYS || 7 }}
+
+  ci-gate:
+    if: always()
+    needs: [changes, generation, js, python, textart, rust, pure-archives, rust-archives, bindings, browser]
+    runs-on: ${{ vars.CI_RUNNER || 'ubuntu-24.04' }}
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Require every selected job; allow only unaffected skips
+        env:
+          SELECTION: ${{ needs.changes.outputs.selection || '{}' }}
+          RESULTS: ${{ toJSON(needs) }}
+        run: python packages/py/tools/ci.py gate --selection "$SELECTION" --results "$RESULTS"

@@ -1,0 +1,21 @@
+[package]
+name = "anbani-spell"
+description = "Georgian spellchecking on a minimal DAWG: lookup, ranked suggestions, personal words, Hunspell export"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+include = ["src/**", "tests/**", "LICENSE", "NOTICE"]
+
+[dependencies]
+anbani-core = { workspace = true, features = ["std"] }
+serde_json = { workspace = true }
+sha2 = "0.10"
+
+[dev-dependencies]
+proptest = "1.11"
+
+[lints]
+workspace = true

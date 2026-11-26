@@ -1,0 +1,26 @@
+[package]
+name = "anbani-cli"
+description = "anbani: the Georgian script and language toolkit on the command line"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+include = ["src/**", "tests/**", "LICENSE", "NOTICE"]
+
+[[bin]]
+name = "anbani"
+path = "src/main.rs"
+
+[dependencies]
+anbani-api = { workspace = true }
+anbani-core = { workspace = true, features = ["std", "legacy"] }
+anbani-mcp = { workspace = true }
+anbani-spell = { workspace = true }
+anbani-tui = { workspace = true }
+clap = { workspace = true, features = ["env"] }
+serde_json = { workspace = true }
+
+[lints]
+workspace = true

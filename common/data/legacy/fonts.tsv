@@ -1,0 +1,49 @@
+# Legacy Georgian font encodings: the character a document stores -> the letter the font draws for it.
+# Read off the fonts' own glyphs (rendered from their Windows cmap, 2026-10-25):
+#   AcadNusx  https://fonts.ge/en/font/2/AcadNusx   acadnusx.ttf  sha256 86ad8787db202657a06b0547418d24dce13504fc01a28b838aab186de519bf61
+#   AcadMtavr https://fonts.ge/en/font/3/AcadMtavr  acadmtavr.ttf sha256 f26130e3d9669105950010699d8cd3779fa3adcfd9b6c68f77547d05124d9bbf
+#   LitNusx   https://fonts.ge/en/font/16/LitNusx   litnusx.ttf   sha256 119d2415b374dcdd9686d4ba370efdab04828f1f4332379e07babb7ce178516c
+# '-' = the font draws the character itself (no row needed); every character not listed is drawn as itself.
+char	acadnusx	litnusx	acadmtavr
+C	ჩ	ჩ	Ჩ
+J	ჟ	ჟ	Ჟ
+R	ღ	ღ	Ღ
+S	შ	შ	Შ
+T	თ	თ	Თ
+W	ჭ	ჭ	Ჭ
+Z	ძ	ძ	Ძ
+a	ა	ა	Ა
+b	ბ	ბ	Ბ
+c	ც	ც	Ც
+d	დ	დ	Დ
+e	ე	ე	Ე
+f	ფ	ფ	Ფ
+g	გ	გ	Გ
+h	ჰ	ჰ	Ჰ
+i	ი	ი	Ი
+j	ჯ	ჯ	Ჯ
+k	კ	კ	Კ
+l	ლ	ლ	Ლ
+m	მ	მ	Მ
+n	ნ	ნ	Ნ
+o	ო	ო	Ო
+p	პ	პ	Პ
+q	ქ	ქ	Ქ
+r	რ	რ	Რ
+s	ს	ს	Ს
+t	ტ	ტ	Ტ
+u	უ	უ	Უ
+v	ვ	ვ	Ვ
+w	წ	წ	Წ
+x	ხ	ხ	Ხ
+y	ყ	ყ	Ყ
+z	ზ	ზ	Ზ
+À	ჱ	-	-
+Á	ჲ	-	-
+Â	ჳ	-	-
+Ã	ჴ	-	-
+Ä	ჵ	-	-
+#	№	№	№
+$	§	§	§
+`	„	„	„
+~	“	“	“

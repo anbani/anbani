@@ -1,0 +1,14 @@
+[
+  { "kind": "BlockFont", "title": "Anbani Braille" },
+  { "kind": "BlockFont", "title": "Anbani Braille Small" },
+  { "kind": "BlockFont", "title": "Anbani Block Regular" },
+  { "kind": "BlockFont", "title": "Anbani Block Small" },
+  { "kind": "BlockFont", "title": "Anbani Block Shadow" },
+  { "kind": "BlockFont", "title": "Anbani Block Shaded" },
+  { "kind": "BlockFont", "title": "Anbani Block Dotted" },
+  { "kind": "BlockFont", "title": "Anbani Cross-Stitch" },
+  { "kind": "LineFont", "title": "Anbani Lines Double" },
+  { "kind": "LineFont", "title": "Anbani Lines Thin" },
+  { "kind": "LineFont", "title": "Anbani Lines Light" },
+  { "kind": "SampleFont", "title": "Anbani Sample Style" }
+]

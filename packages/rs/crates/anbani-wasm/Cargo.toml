@@ -1,0 +1,22 @@
+[package]
+name = "anbani-wasm"
+description = "anbani-core for the browser: @anbani/wasm"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+publish = false
+include = ["src/**", "LICENSE", "NOTICE"]
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+anbani-api = { workspace = true }
+anbani-core = { workspace = true }
+wasm-bindgen = { workspace = true }
+
+[lints]
+workspace = true

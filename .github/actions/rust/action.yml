@@ -1,0 +1,42 @@
+name: rust
+description: rustup and the pinned Rust toolchain
+inputs:
+  targets:
+    description: Space-separated extra targets (e.g. wasm32-unknown-unknown)
+    default: ""
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      env:
+        RUSTUP_VERSION: 1.28.2
+        TARGETS: ${{ inputs.targets }}
+      run: |
+        set -euo pipefail
+        lock="${RUNNER_TEMP:?}/rust.lock"
+        if ! command -v rustup >/dev/null; then
+          root="${RUNNER_TOOL_CACHE:?}/rust"
+          lock="$root/.lock"
+          export RUSTUP_HOME="$root/rustup" CARGO_HOME="$root/cargo"
+          mkdir -p "$root"
+          (
+            flock -w 900 9
+            if [ ! -x "$CARGO_HOME/bin/rustup" ]; then
+              base="https://static.rust-lang.org/rustup/archive/$RUSTUP_VERSION/$(uname -m)-unknown-linux-gnu"
+              curl -fsSL --retry 3 --max-time 300 -o "$root/rustup-init" "$base/rustup-init"
+              echo "$(curl -fsSL --retry 3 --max-time 60 "$base/rustup-init.sha256" | awk '{print $1}')  $root/rustup-init" | sha256sum -c -
+              chmod +x "$root/rustup-init"
+              "$root/rustup-init" -y --no-modify-path --profile minimal --default-toolchain none
+            fi
+          ) 9>"$lock"
+          export PATH="$CARGO_HOME/bin:$PATH" CARGO_HOME="$HOME/.cargo"
+          mkdir -p "$CARGO_HOME"
+          { echo "RUSTUP_HOME=$RUSTUP_HOME"; echo "CARGO_HOME=$CARGO_HOME"; } >> "$GITHUB_ENV"
+          echo "$root/cargo/bin" >> "$GITHUB_PATH"
+        fi
+        channel="$(python packages/py/tools/rust-toolchain.py --print)"
+        components="$(python -c 'import tomllib; print(",".join(tomllib.load(open("packages/rs/rust-toolchain.toml", "rb"))["toolchain"]["components"]))')"
+        args=(toolchain install "$channel" --profile minimal --component "$components")
+        for target in $TARGETS; do args+=(--target "$target"); done
+        ( flock -w 900 9; timeout 900 rustup "${args[@]}" ) 9>"$lock"
+        rustup run "$channel" rustc --version

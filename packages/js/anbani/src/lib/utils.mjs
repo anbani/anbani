@@ -1,0 +1,149 @@
+import data from "./data.mjs";
+
+export const checkForAliases = (dir) => {
+    var aliases = {
+        მხედრული: "mkhedruli",
+        ასომთავრული: "asomtavruli",
+        ნუსხური: "nuskhuri",
+        მთავრული: "mtavruli",
+        ხუცური: "khutsuri",
+        შანიძისეული: "shanidziseuli",
+        ტფილელისეული: "tfileliseuli",
+        სასათაურე: "sasataure",
+        ჰომოგლიფი: "homoglyph",
+        ბრაილი: "braille",
+        ფონეტიკური: "phonetic",
+        ლათინური: "qwerty",
+        კირილიცა: "cyrillic",
+        ბერძნული: "greek",
+        სომხური: "armenian",
+        ნაციონალური: "national",
+        გამარტივებული: "national_simplified",
+        ქვერთი: "qwerty",
+        ზოგადი: "common",
+        ტრანსკრიფცია: "common",
+        ისო: "iso_9984",
+        ბგნ: "bgn",
+    };
+
+    Object.keys(aliases).forEach(function (key) {
+        if (key == dir.from) {
+            dir.from = aliases[key];
+        }
+        if (key == dir.to) {
+            dir.to = aliases[key];
+        }
+    });
+};
+
+export const checkForDirection = (dir) => {
+    let permitted_from = [
+        "kartvelian_morse",
+        "mkhedruli",
+        "asomtavruli",
+        "nuskhuri",
+        "mtavruli",
+        "qwerty",
+        "braille",
+    ];
+    let permitted_to = [
+        "kartvelian_morse",
+        ...Object.keys(data.alphabets),
+        "khutsuri",
+        "shanidziseuli",
+        "tfileliseuli",
+        "sasataure",
+    ];
+    if (permitted_from.indexOf(dir.from) == -1)
+        throw new Error(`Text conversion from '${dir.from}' is not supported.`);
+    if (permitted_to.indexOf(dir.to) == -1)
+        throw new Error(`Text conversion to '${dir.to}' is not supported.`);
+};
+
+export const isBicameral = (to) => {
+    return to == "tfileliseuli" || to == "shanidziseuli" || to == "khutsuri" || to == "sasataure";
+};
+
+export const setCharAt = (str, where, what, offset = 0) => {
+    if (where > str.length - 1) return str;
+    return str.substring(0, where) + what + str.substring(where + what.length + offset);
+};
+
+export const toUpperCase = (word, from, to) => {
+    let char = data.alphabets[to][data.alphabets[from].indexOf(word[0])];
+    char = char == undefined || char === "" ? word[0] : char;
+    return setCharAt(word, 0, char);
+};
+
+export const detectAlphabet = (str, idx) => {
+    for (; idx >= 0; idx--) {
+        const ch = str[idx];
+        if (data.regex.mkhedruli.test(ch)) return "mkhedruli";
+        if (data.regex.latin.test(ch)) return "qwerty";
+        if (data.regex.asomtavruli.test(ch)) return "asomtavruli";
+        if (data.regex.mtavruli.test(ch)) return "mtavruli";
+        if (data.regex.nuskhuri.test(ch)) return "nuskhuri";
+        if (data.regex.braille.test(ch)) return "braille";
+    }
+    return "qwerty";
+};
+
+export const classifyText = (str) => {
+    let vector = [
+        data.regex.mkhedruli.test(str),
+        data.regex.mtavruli.test(str),
+        data.regex.asomtavruli.test(str),
+        data.regex.nuskhuri.test(str),
+        data.regex.latin.test(str),
+        data.regex.cyrillic.test(str),
+        data.regex.braille.test(str),
+    ];
+
+    if (isSame(vector, [true, false, false, false, false, false, false]))
+        return "mkhedruli";
+
+    if (isSame(vector, [false, true, false, false, false, false, false]))
+        return "mtavruli";
+
+    if (isSame(vector, [false, false, true, false, false, false, false]))
+        return "asomtavruli";
+
+    if (isSame(vector, [false, false, false, true, false, false, false]))
+        return "nuskhuri";
+
+    if (isSame(vector, [true, true, false, false, false, false, false]))
+        return "tfileliseuli";
+
+    if (isSame(vector, [true, false, true, false, false, false, false]))
+        return "shanidziseuli";
+
+    if (isSame(vector, [false, false, true, true, false, false, false]))
+        return "khutsuri";
+
+    if (isSame(vector, [false, true, true, false, false, false, false]))
+        return "sasataure";
+
+    if (isSame(vector, [false, false, false, false, true, false, false]))
+        return "latin";
+
+    if (isSame(vector, [false, false, false, false, false, true, false]))
+        return "cyrillic";
+
+    if (isSame(vector, [false, false, false, false, false, false, true]))
+        return "braille";
+
+    return "unknown";
+};
+
+export const cca = (char) => char.charCodeAt(0);
+
+export const fcc = (code) => String.fromCharCode(code);
+
+export const isSame = (b1, b2) => {
+    for (let i = 0, len = b1.length; i < len; i++) {
+        if (b1[i] != b2[i]) return false;
+    }
+    return true;
+};
+
+export default { checkForAliases, checkForDirection, setCharAt, isBicameral, toUpperCase, detectAlphabet, classifyText, cca, fcc, isSame };

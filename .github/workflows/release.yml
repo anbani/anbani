@@ -1,0 +1,1074 @@
+name: release
+run-name: release ${{ github.ref_name }}
+
+on:
+  push:
+    tags: ["js-v*", "py-v*", "textart-v*", "rs-v*"]
+
+permissions: {}
+concurrency:
+  group: ${{ startsWith(github.ref_name, 'js-v') && 'release-js' || startsWith(github.ref_name, 'py-v') && 'release-py' || startsWith(github.ref_name, 'textart-v') && 'release-textart' || 'release-rs' }}
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  PIP_DISABLE_PIP_VERSION_CHECK: "1"
+  PIP_DEFAULT_TIMEOUT: "60"
+  CARGO_TERM_COLOR: always
+
+jobs:
+  gate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions: {contents: read, checks: read, actions: read}
+    outputs:
+      family: ${{ steps.plan.outputs.family }}
+      source_sha: ${{ steps.plan.outputs.source_sha }}
+      publication_holds: ${{ steps.plan.outputs.publication_holds }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with: {python-version: "3.12"}
+      - id: plan
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          python packages/py/tools/release.py plan --tag "$RELEASE_TAG" > "$RUNNER_TEMP/release-plan.json"
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          plan = json.loads(Path(os.environ['RUNNER_TEMP'], 'release-plan.json').read_text())
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as stream:
+              for key in ('family', 'source_sha', 'publication_holds'):
+                  value = plan[key]
+                  stream.write(f'{key}={json.dumps(value) if not isinstance(value, str) else value}\n')
+          if plan['publication_holds']:
+              raise SystemExit('Publication is HELD: resolve the recorded approval gates before a release tag')
+          PY
+
+  source:
+    needs: gate
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    permissions: {contents: read}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.gate.outputs.source_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with: {python-version: "3.12"}
+      - uses: actions/setup-node@v7
+        with: {node-version: "18"}
+      - uses: actions/cache@v6
+        if: needs.gate.outputs.family == 'rs'
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            packages/rs/target
+          key: release-cargo-${{ runner.os }}-${{ needs.gate.outputs.source_sha }}
+      - name: Install explicit build tools
+        run: |
+          python packages/py/tools/rust-toolchain.py --target wasm32-unknown-unknown
+          python -m pip install build maturin==1.16.0
+      - name: Build and install detached source and canonical archives
+        env: {RELEASE_TAG: "${{ github.ref_name }}"}
+        run: python packages/py/tools/release-build.py source --tag "$RELEASE_TAG" --out "$RUNNER_TEMP/source"
+      - uses: actions/upload-artifact@v6
+        with:
+          name: source
+          path: ${{ runner.temp }}/source
+          if-no-files-found: error
+          retention-days: 14
+
+  browser:
+    needs: gate
+    if: needs.gate.outputs.family != 'py'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    permissions: {contents: read}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.gate.outputs.source_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with: {python-version: "3.12"}
+      - uses: actions/setup-node@v7
+        with: {node-version: "22"}
+      - run: |
+          python packages/py/tools/rust-toolchain.py --target wasm32-unknown-unknown
+      - name: Real Chrome installed UMD and HTTP wasm proof (not release payloads)
+        env: {RELEASE_TAG: "${{ github.ref_name }}"}
+        run: python packages/py/tools/release-build.py browser --tag "$RELEASE_TAG" --out "$RUNNER_TEMP/browser-proof"
+      - uses: actions/upload-artifact@v6
+        with:
+          name: browser-proof
+          path: ${{ runner.temp }}/browser-proof
+          if-no-files-found: error
+          retention-days: 14
+
+  native:
+    needs: [gate, source]
+    if: needs.gate.outputs.family == 'rs'
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 150
+    permissions: {contents: read}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {os: ubuntu-24.04, key: linux-x64-gnu}
+          - {os: ubuntu-24.04-arm, key: linux-arm64-gnu}
+          - {os: macos-15-intel, key: darwin-x64}
+          - {os: macos-15, key: darwin-arm64}
+          - {os: windows-2025, key: win32-x64-msvc}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.gate.outputs.source_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with: {python-version: "3.12"}
+      - uses: actions/setup-node@v7
+        with: {node-version: "24"}
+      - run: |
+          python packages/py/tools/rust-toolchain.py
+          python -m pip install maturin==1.16.0
+      - uses: actions/download-artifact@v7
+        with:
+          name: source
+          path: ${{ runner.temp }}/source
+      - name: Actual matching host; Linux builds and smokes INSIDE matching manylinux 2.28
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+          PLATFORM_KEY: ${{ matrix.key }}
+        run: |
+          python - <<'PY'
+          import os, pathlib, subprocess, sys
+          temporary = pathlib.Path(os.environ['RUNNER_TEMP'])
+          sdists = list((temporary / 'source/payload').glob('anbani_rs-*.tar.gz'))
+          if len(sdists) != 1: raise SystemExit('expected one canonical binding sdist')
+          subprocess.run([sys.executable, 'packages/py/tools/release-build.py', 'native', '--tag', os.environ['RELEASE_TAG'], '--key', os.environ['PLATFORM_KEY'], '--sdist', str(sdists[0]), '--out', str(temporary / 'native')], check=True, timeout=8500)
+          PY
+      - uses: actions/upload-artifact@v6
+        with:
+          name: native-${{ matrix.key }}
+          path: ${{ runner.temp }}/native
+          if-no-files-found: error
+          retention-days: 14
+
+  musl:
+    needs: gate
+    if: needs.gate.outputs.family == 'rs'
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+    permissions: {contents: read}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {os: ubuntu-24.04, arch: x86_64}
+          - {os: ubuntu-24.04-arm, arch: aarch64}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.gate.outputs.source_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with: {python-version: "3.12"}
+      - run: |
+          sudo apt-get update
+          sudo apt-get install -y musl-tools
+          python packages/py/tools/rust-toolchain.py
+      - name: Build and execute real native musl CLI
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+          NATIVE_ARCH: ${{ matrix.arch }}
+        run: python packages/py/tools/release-build.py musl --tag "$RELEASE_TAG" --arch "$NATIVE_ARCH" --out "$RUNNER_TEMP/musl"
+      - uses: actions/upload-artifact@v6
+        with:
+          name: musl-${{ matrix.arch }}
+          path: ${{ runner.temp }}/musl
+          if-no-files-found: error
+          retention-days: 14
+
+  assemble:
+    needs: [gate, source, browser, native, musl]
+    if: >-
+      always() && !cancelled() && needs.gate.result == 'success' &&
+      needs.source.result == 'success' &&
+      !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions: {contents: read}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.gate.outputs.source_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with: {python-version: "3.12"}
+      - uses: actions/setup-node@v7
+        with: {node-version: "24"}
+      - uses: actions/download-artifact@v7
+        with:
+          pattern: source
+          path: ${{ runner.temp }}/inputs
+      - uses: actions/download-artifact@v7
+        if: needs.gate.outputs.family == 'rs'
+        with:
+          pattern: native-*
+          path: ${{ runner.temp }}/inputs
+      - uses: actions/download-artifact@v7
+        if: needs.gate.outputs.family == 'rs'
+        with:
+          pattern: musl-*
+          path: ${{ runner.temp }}/inputs
+      - if: needs.gate.outputs.family == 'rs'
+        env: {RELEASE_TAG: "${{ github.ref_name }}"}
+        run: python packages/py/tools/release-build.py assemble --tag "$RELEASE_TAG" --inputs "$RUNNER_TEMP/inputs" --out "$RUNNER_TEMP/complete"
+      - if: needs.gate.outputs.family != 'rs'
+        run: |
+          python - <<'PY'
+          import os, pathlib, shutil
+          temporary = pathlib.Path(os.environ['RUNNER_TEMP'])
+          shutil.copytree(temporary / 'inputs/source', temporary / 'complete')
+          PY
+      - uses: actions/upload-artifact@v6
+        with:
+          name: complete-payload
+          path: ${{ runner.temp }}/complete/payload
+          if-no-files-found: error
+          retention-days: 14
+
+  prepare:
+    needs: [gate, assemble]
+    if: needs.gate.outputs.publication_holds == '[]'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions: {contents: write, checks: read, actions: read}
+    outputs:
+      bootstrap_required: ${{ steps.prepare.outputs.bootstrap_required }}
+      missing_files: ${{ steps.prepare.outputs.missing_files }}
+      deadline_epoch: ${{ steps.prepare.outputs.deadline_epoch }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.gate.outputs.source_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with: {python-version: "3.12"}
+      - uses: actions/download-artifact@v7
+        with:
+          name: complete-payload
+          path: ${{ runner.temp }}/stored
+      - id: prepare
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          python packages/py/tools/release.py prepare --tag "$RELEASE_TAG" --artifacts "$RUNNER_TEMP/stored" > "$RUNNER_TEMP/prepared.json"
+          python - <<'PY'
+          import json, os, time
+          from pathlib import Path
+          prepared = json.loads(Path(os.environ['RUNNER_TEMP'], 'prepared.json').read_text())
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as stream:
+              for key in ('bootstrap_required', 'missing_files'):
+                  stream.write(f'{key}={json.dumps(prepared[key], separators=(",", ":"))}\n')
+              stream.write(f'deadline_epoch={int(time.time()) + 1200}\n')
+          PY
+      - uses: actions/upload-artifact@v6
+        with:
+          name: verified-stored
+          path: ${{ runner.temp }}/stored
+          if-no-files-found: error
+          retention-days: 14
+
+  publish-npm-platforms-bootstrap:
+    needs: [gate, prepare]
+    if: >-
+      always() && !cancelled() && needs.prepare.result == 'success' &&
+      !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') &&
+      contains(needs.prepare.outputs.missing_files, '"registry":"npm"') && needs.gate.outputs.family == 'rs' && contains(needs.prepare.outputs.bootstrap_required, '"registry":"npm"')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    environment: npm-bootstrap
+    permissions: {contents: read, actions: read}
+    env:
+      RELEASE_DEADLINE_EPOCH: ${{ needs.prepare.outputs.deadline_epoch }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.gate.outputs.source_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with: {python-version: "3.12"}
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          registry-url: https://registry.npmjs.org
+      - run: npm install --global npm@11.6.2
+      - uses: actions/download-artifact@v7
+        with:
+          name: verified-stored
+          path: ${{ runner.temp }}/stored
+      - name: Verified stored-byte bootstrap publication
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+          GITHUB_TOKEN: ${{ github.token }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_BOOTSTRAP_TOKEN }}
+        run: python packages/py/tools/release-publish.py npm --tag "$RELEASE_TAG" --artifacts "$RUNNER_TEMP/stored" --mode bootstrap --group platforms
+
+  publish-npm-platforms-normal:
+    needs: [gate, prepare, publish-npm-platforms-bootstrap]
+    if: >-
+      always() && !cancelled() && needs.prepare.result == 'success' &&
+      !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') &&
+      contains(needs.prepare.outputs.missing_files, '"registry":"npm"')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    environment: npm
+    permissions: {contents: read, actions: read, id-token: write}
+    env:
+      RELEASE_DEADLINE_EPOCH: ${{ needs.prepare.outputs.deadline_epoch }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.gate.outputs.source_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with: {python-version: "3.12"}
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          registry-url: https://registry.npmjs.org
+      - run: npm install --global npm@11.6.2
+      - uses: actions/download-artifact@v7
+        with:
+          name: verified-stored
+          path: ${{ runner.temp }}/stored
+      - name: Verified stored-byte normal publication
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python packages/py/tools/release-publish.py npm --tag "$RELEASE_TAG" --artifacts "$RUNNER_TEMP/stored" --mode normal --group platforms
+
+  publish-npm-root-bootstrap:
+    needs: [gate, prepare, publish-npm-platforms-bootstrap, publish-npm-platforms-normal]
+    if: >-
+      always() && !cancelled() && needs.prepare.result == 'success' &&
+      !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') &&
+      contains(needs.prepare.outputs.missing_files, '"package":"@anbani/native"') && contains(needs.prepare.outputs.bootstrap_required, '"package":"@anbani/native"')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    environment: npm-bootstrap
+    permissions: {contents: read, actions: read}
+    env:
+      RELEASE_DEADLINE_EPOCH: ${{ needs.prepare.outputs.deadline_epoch }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.gate.outputs.source_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with: {python-version: "3.12"}
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          registry-url: https://registry.npmjs.org
+      - run: npm install --global npm@11.6.2
+      - uses: actions/download-artifact@v7
+        with:
+          name: verified-stored
+          path: ${{ runner.temp }}/stored
+      - name: Verified stored-byte bootstrap publication
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+          GITHUB_TOKEN: ${{ github.token }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_BOOTSTRAP_TOKEN }}
+        run: python packages/py/tools/release-publish.py npm --tag "$RELEASE_TAG" --artifacts "$RUNNER_TEMP/stored" --mode bootstrap --group root
+
+  publish-npm-root-normal:
+    needs: [gate, prepare, publish-npm-platforms-bootstrap, publish-npm-platforms-normal, publish-npm-root-bootstrap]
+    if: >-
+      always() && !cancelled() && needs.prepare.result == 'success' &&
+      !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') &&
+      contains(needs.prepare.outputs.missing_files, '"package":"@anbani/native"') && !contains(needs.prepare.outputs.bootstrap_required, '"package":"@anbani/native"')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    environment: npm
+    permissions: {contents: read, actions: read, id-token: write}
+    env:
+      RELEASE_DEADLINE_EPOCH: ${{ needs.prepare.outputs.deadline_epoch }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.gate.outputs.source_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with: {python-version: "3.12"}
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          registry-url: https://registry.npmjs.org
+      - run: npm install --global npm@11.6.2
+      - uses: actions/download-artifact@v7
+        with:
+          name: verified-stored
+          path: ${{ runner.temp }}/stored
+      - name: Verified stored-byte normal publication
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python packages/py/tools/release-publish.py npm --tag "$RELEASE_TAG" --artifacts "$RUNNER_TEMP/stored" --mode normal --group root
+
+  publish-npm-wasm-bootstrap:
+    needs: [gate, prepare, publish-npm-platforms-bootstrap, publish-npm-platforms-normal, publish-npm-root-bootstrap, publish-npm-root-normal]
+    if: >-
+      always() && !cancelled() && needs.prepare.result == 'success' &&
+      !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') &&
+      contains(needs.prepare.outputs.missing_files, '"package":"@anbani/wasm"') && contains(needs.prepare.outputs.bootstrap_required, '"package":"@anbani/wasm"')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    environment: npm-bootstrap
+    permissions: {contents: read, actions: read}
+    env:
+      RELEASE_DEADLINE_EPOCH: ${{ needs.prepare.outputs.deadline_epoch }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.gate.outputs.source_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with: {python-version: "3.12"}
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          registry-url: https://registry.npmjs.org
+      - run: npm install --global npm@11.6.2
+      - uses: actions/download-artifact@v7
+        with:
+          name: verified-stored
+          path: ${{ runner.temp }}/stored
+      - name: Verified stored-byte bootstrap publication
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+          GITHUB_TOKEN: ${{ github.token }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_BOOTSTRAP_TOKEN }}
+        run: python packages/py/tools/release-publish.py npm --tag "$RELEASE_TAG" --artifacts "$RUNNER_TEMP/stored" --mode bootstrap --group wasm
+
+  publish-npm-wasm-normal:
+    needs: [gate, prepare, publish-npm-platforms-bootstrap, publish-npm-platforms-normal, publish-npm-root-bootstrap, publish-npm-root-normal, publish-npm-wasm-bootstrap]
+    if: >-
+      always() && !cancelled() && needs.prepare.result == 'success' &&
+      !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') &&
+      contains(needs.prepare.outputs.missing_files, '"package":"@anbani/wasm"') && !contains(needs.prepare.outputs.bootstrap_required, '"package":"@anbani/wasm"')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    environment: npm
+    permissions: {contents: read, actions: read, id-token: write}
+    env:
+      RELEASE_DEADLINE_EPOCH: ${{ needs.prepare.outputs.deadline_epoch }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.gate.outputs.source_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with: {python-version: "3.12"}
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          registry-url: https://registry.npmjs.org
+      - run: npm install --global npm@11.6.2
+      - uses: actions/download-artifact@v7
+        with:
+          name: verified-stored
+          path: ${{ runner.temp }}/stored
+      - name: Verified stored-byte normal publication
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python packages/py/tools/release-publish.py npm --tag "$RELEASE_TAG" --artifacts "$RUNNER_TEMP/stored" --mode normal --group wasm
+
+  publish-crates-core-bootstrap:
+    needs: [gate, prepare]
+    if: >-
+      always() && !cancelled() && needs.prepare.result == 'success' &&
+      !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') &&
+      contains(needs.prepare.outputs.missing_files, '"package":"anbani-core"') && contains(needs.prepare.outputs.bootstrap_required, '"package":"anbani-core"')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    environment: crates-io-bootstrap
+    permissions: {contents: read, actions: read}
+    env:
+      RELEASE_DEADLINE_EPOCH: ${{ needs.prepare.outputs.deadline_epoch }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.gate.outputs.source_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with: {python-version: "3.12"}
+      - uses: actions/download-artifact@v7
+        with:
+          name: verified-stored
+          path: ${{ runner.temp }}/stored
+      - run: |
+          python packages/py/tools/rust-toolchain.py
+      - uses: actions/cache/restore@v6
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            packages/rs/target
+          key: release-cargo-${{ runner.os }}-${{ needs.gate.outputs.source_sha }}
+      - name: Verified stored-byte bootstrap publication
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+          GITHUB_TOKEN: ${{ github.token }}
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CRATES_IO_BOOTSTRAP_TOKEN }}
+        run: python packages/py/tools/release-publish.py crates --tag "$RELEASE_TAG" --artifacts "$RUNNER_TEMP/stored" --mode bootstrap --package anbani-core
+
+  publish-crates-core-normal:
+    needs: [gate, prepare, publish-crates-core-bootstrap]
+    if: >-
+      always() && !cancelled() && needs.prepare.result == 'success' &&
+      !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') &&
+      contains(needs.prepare.outputs.missing_files, '"package":"anbani-core"') && !contains(needs.prepare.outputs.bootstrap_required, '"package":"anbani-core"')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    environment: crates-io
+    permissions: {contents: read, actions: read, id-token: write}
+    env:
+      RELEASE_DEADLINE_EPOCH: ${{ needs.prepare.outputs.deadline_epoch }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.gate.outputs.source_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with: {python-version: "3.12"}
+      - uses: actions/download-artifact@v7
+        with:
+          name: verified-stored
+          path: ${{ runner.temp }}/stored
+      - run: |
+          python packages/py/tools/rust-toolchain.py
+      - uses: rust-lang/crates-io-auth-action@v1
+        id: auth
+      - uses: actions/cache/restore@v6
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            packages/rs/target
+          key: release-cargo-${{ runner.os }}-${{ needs.gate.outputs.source_sha }}
+      - name: Verified stored-byte normal publication
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+          GITHUB_TOKEN: ${{ github.token }}
+          CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token }}
+        run: python packages/py/tools/release-publish.py crates --tag "$RELEASE_TAG" --artifacts "$RUNNER_TEMP/stored" --mode normal --package anbani-core
+
+  publish-crates-api-bootstrap:
+    needs: [gate, prepare, publish-crates-core-bootstrap, publish-crates-core-normal]
+    if: >-
+      always() && !cancelled() && needs.prepare.result == 'success' &&
+      !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') &&
+      contains(needs.prepare.outputs.missing_files, '"package":"anbani-api"') && contains(needs.prepare.outputs.bootstrap_required, '"package":"anbani-api"')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    environment: crates-io-bootstrap
+    permissions: {contents: read, actions: read}
+    env:
+      RELEASE_DEADLINE_EPOCH: ${{ needs.prepare.outputs.deadline_epoch }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.gate.outputs.source_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with: {python-version: "3.12"}
+      - uses: actions/download-artifact@v7
+        with:
+          name: verified-stored
+          path: ${{ runner.temp }}/stored
+      - run: |
+          python packages/py/tools/rust-toolchain.py
+      - uses: actions/cache/restore@v6
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            packages/rs/target
+          key: release-cargo-${{ runner.os }}-${{ needs.gate.outputs.source_sha }}
+      - name: Verified stored-byte bootstrap publication
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+          GITHUB_TOKEN: ${{ github.token }}
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CRATES_IO_BOOTSTRAP_TOKEN }}
+        run: python packages/py/tools/release-publish.py crates --tag "$RELEASE_TAG" --artifacts "$RUNNER_TEMP/stored" --mode bootstrap --package anbani-api
+
+  publish-crates-api-normal:
+    needs: [gate, prepare, publish-crates-core-bootstrap, publish-crates-core-normal, publish-crates-api-bootstrap]
+    if: >-
+      always() && !cancelled() && needs.prepare.result == 'success' &&
+      !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') &&
+      contains(needs.prepare.outputs.missing_files, '"package":"anbani-api"') && !contains(needs.prepare.outputs.bootstrap_required, '"package":"anbani-api"')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    environment: crates-io
+    permissions: {contents: read, actions: read, id-token: write}
+    env:
+      RELEASE_DEADLINE_EPOCH: ${{ needs.prepare.outputs.deadline_epoch }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.gate.outputs.source_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with: {python-version: "3.12"}
+      - uses: actions/download-artifact@v7
+        with:
+          name: verified-stored
+          path: ${{ runner.temp }}/stored
+      - run: |
+          python packages/py/tools/rust-toolchain.py
+      - uses: rust-lang/crates-io-auth-action@v1
+        id: auth
+      - uses: actions/cache/restore@v6
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            packages/rs/target
+          key: release-cargo-${{ runner.os }}-${{ needs.gate.outputs.source_sha }}
+      - name: Verified stored-byte normal publication
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+          GITHUB_TOKEN: ${{ github.token }}
+          CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token }}
+        run: python packages/py/tools/release-publish.py crates --tag "$RELEASE_TAG" --artifacts "$RUNNER_TEMP/stored" --mode normal --package anbani-api
+
+  publish-crates-spell-bootstrap:
+    needs: [gate, prepare, publish-crates-core-bootstrap, publish-crates-core-normal, publish-crates-api-bootstrap, publish-crates-api-normal]
+    if: >-
+      always() && !cancelled() && needs.prepare.result == 'success' &&
+      !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') &&
+      contains(needs.prepare.outputs.missing_files, '"package":"anbani-spell"') && contains(needs.prepare.outputs.bootstrap_required, '"package":"anbani-spell"')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    environment: crates-io-bootstrap
+    permissions: {contents: read, actions: read}
+    env:
+      RELEASE_DEADLINE_EPOCH: ${{ needs.prepare.outputs.deadline_epoch }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.gate.outputs.source_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with: {python-version: "3.12"}
+      - uses: actions/download-artifact@v7
+        with:
+          name: verified-stored
+          path: ${{ runner.temp }}/stored
+      - run: |
+          python packages/py/tools/rust-toolchain.py
+      - uses: actions/cache/restore@v6
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            packages/rs/target
+          key: release-cargo-${{ runner.os }}-${{ needs.gate.outputs.source_sha }}
+      - name: Verified stored-byte bootstrap publication
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+          GITHUB_TOKEN: ${{ github.token }}
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CRATES_IO_BOOTSTRAP_TOKEN }}
+        run: python packages/py/tools/release-publish.py crates --tag "$RELEASE_TAG" --artifacts "$RUNNER_TEMP/stored" --mode bootstrap --package anbani-spell
+
+  publish-crates-spell-normal:
+    needs: [gate, prepare, publish-crates-core-bootstrap, publish-crates-core-normal, publish-crates-api-bootstrap, publish-crates-api-normal, publish-crates-spell-bootstrap]
+    if: >-
+      always() && !cancelled() && needs.prepare.result == 'success' &&
+      !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') &&
+      contains(needs.prepare.outputs.missing_files, '"package":"anbani-spell"') && !contains(needs.prepare.outputs.bootstrap_required, '"package":"anbani-spell"')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    environment: crates-io
+    permissions: {contents: read, actions: read, id-token: write}
+    env:
+      RELEASE_DEADLINE_EPOCH: ${{ needs.prepare.outputs.deadline_epoch }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.gate.outputs.source_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with: {python-version: "3.12"}
+      - uses: actions/download-artifact@v7
+        with:
+          name: verified-stored
+          path: ${{ runner.temp }}/stored
+      - run: |
+          python packages/py/tools/rust-toolchain.py
+      - uses: rust-lang/crates-io-auth-action@v1
+        id: auth
+      - uses: actions/cache/restore@v6
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            packages/rs/target
+          key: release-cargo-${{ runner.os }}-${{ needs.gate.outputs.source_sha }}
+      - name: Verified stored-byte normal publication
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+          GITHUB_TOKEN: ${{ github.token }}
+          CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token }}
+        run: python packages/py/tools/release-publish.py crates --tag "$RELEASE_TAG" --artifacts "$RUNNER_TEMP/stored" --mode normal --package anbani-spell
+
+  publish-crates-tui-bootstrap:
+    needs: [gate, prepare, publish-crates-core-bootstrap, publish-crates-core-normal, publish-crates-api-bootstrap, publish-crates-api-normal, publish-crates-spell-bootstrap, publish-crates-spell-normal]
+    if: >-
+      always() && !cancelled() && needs.prepare.result == 'success' &&
+      !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') &&
+      contains(needs.prepare.outputs.missing_files, '"package":"anbani-tui"') && contains(needs.prepare.outputs.bootstrap_required, '"package":"anbani-tui"')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    environment: crates-io-bootstrap
+    permissions: {contents: read, actions: read}
+    env:
+      RELEASE_DEADLINE_EPOCH: ${{ needs.prepare.outputs.deadline_epoch }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.gate.outputs.source_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with: {python-version: "3.12"}
+      - uses: actions/download-artifact@v7
+        with:
+          name: verified-stored
+          path: ${{ runner.temp }}/stored
+      - run: |
+          python packages/py/tools/rust-toolchain.py
+      - uses: actions/cache/restore@v6
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            packages/rs/target
+          key: release-cargo-${{ runner.os }}-${{ needs.gate.outputs.source_sha }}
+      - name: Verified stored-byte bootstrap publication
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+          GITHUB_TOKEN: ${{ github.token }}
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CRATES_IO_BOOTSTRAP_TOKEN }}
+        run: python packages/py/tools/release-publish.py crates --tag "$RELEASE_TAG" --artifacts "$RUNNER_TEMP/stored" --mode bootstrap --package anbani-tui
+
+  publish-crates-tui-normal:
+    needs: [gate, prepare, publish-crates-core-bootstrap, publish-crates-core-normal, publish-crates-api-bootstrap, publish-crates-api-normal, publish-crates-spell-bootstrap, publish-crates-spell-normal, publish-crates-tui-bootstrap]
+    if: >-
+      always() && !cancelled() && needs.prepare.result == 'success' &&
+      !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') &&
+      contains(needs.prepare.outputs.missing_files, '"package":"anbani-tui"') && !contains(needs.prepare.outputs.bootstrap_required, '"package":"anbani-tui"')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    environment: crates-io
+    permissions: {contents: read, actions: read, id-token: write}
+    env:
+      RELEASE_DEADLINE_EPOCH: ${{ needs.prepare.outputs.deadline_epoch }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.gate.outputs.source_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with: {python-version: "3.12"}
+      - uses: actions/download-artifact@v7
+        with:
+          name: verified-stored
+          path: ${{ runner.temp }}/stored
+      - run: |
+          python packages/py/tools/rust-toolchain.py
+      - uses: rust-lang/crates-io-auth-action@v1
+        id: auth
+      - uses: actions/cache/restore@v6
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            packages/rs/target
+          key: release-cargo-${{ runner.os }}-${{ needs.gate.outputs.source_sha }}
+      - name: Verified stored-byte normal publication
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+          GITHUB_TOKEN: ${{ github.token }}
+          CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token }}
+        run: python packages/py/tools/release-publish.py crates --tag "$RELEASE_TAG" --artifacts "$RUNNER_TEMP/stored" --mode normal --package anbani-tui
+
+  publish-crates-mcp-bootstrap:
+    needs: [gate, prepare, publish-crates-core-bootstrap, publish-crates-core-normal, publish-crates-api-bootstrap, publish-crates-api-normal, publish-crates-spell-bootstrap, publish-crates-spell-normal, publish-crates-tui-bootstrap, publish-crates-tui-normal]
+    if: >-
+      always() && !cancelled() && needs.prepare.result == 'success' &&
+      !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') &&
+      contains(needs.prepare.outputs.missing_files, '"package":"anbani-mcp"') && contains(needs.prepare.outputs.bootstrap_required, '"package":"anbani-mcp"')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    environment: crates-io-bootstrap
+    permissions: {contents: read, actions: read}
+    env:
+      RELEASE_DEADLINE_EPOCH: ${{ needs.prepare.outputs.deadline_epoch }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.gate.outputs.source_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with: {python-version: "3.12"}
+      - uses: actions/download-artifact@v7
+        with:
+          name: verified-stored
+          path: ${{ runner.temp }}/stored
+      - run: |
+          python packages/py/tools/rust-toolchain.py
+      - uses: actions/cache/restore@v6
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            packages/rs/target
+          key: release-cargo-${{ runner.os }}-${{ needs.gate.outputs.source_sha }}
+      - name: Verified stored-byte bootstrap publication
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+          GITHUB_TOKEN: ${{ github.token }}
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CRATES_IO_BOOTSTRAP_TOKEN }}
+        run: python packages/py/tools/release-publish.py crates --tag "$RELEASE_TAG" --artifacts "$RUNNER_TEMP/stored" --mode bootstrap --package anbani-mcp
+
+  publish-crates-mcp-normal:
+    needs: [gate, prepare, publish-crates-core-bootstrap, publish-crates-core-normal, publish-crates-api-bootstrap, publish-crates-api-normal, publish-crates-spell-bootstrap, publish-crates-spell-normal, publish-crates-tui-bootstrap, publish-crates-tui-normal, publish-crates-mcp-bootstrap]
+    if: >-
+      always() && !cancelled() && needs.prepare.result == 'success' &&
+      !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') &&
+      contains(needs.prepare.outputs.missing_files, '"package":"anbani-mcp"') && !contains(needs.prepare.outputs.bootstrap_required, '"package":"anbani-mcp"')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    environment: crates-io
+    permissions: {contents: read, actions: read, id-token: write}
+    env:
+      RELEASE_DEADLINE_EPOCH: ${{ needs.prepare.outputs.deadline_epoch }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.gate.outputs.source_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with: {python-version: "3.12"}
+      - uses: actions/download-artifact@v7
+        with:
+          name: verified-stored
+          path: ${{ runner.temp }}/stored
+      - run: |
+          python packages/py/tools/rust-toolchain.py
+      - uses: rust-lang/crates-io-auth-action@v1
+        id: auth
+      - uses: actions/cache/restore@v6
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            packages/rs/target
+          key: release-cargo-${{ runner.os }}-${{ needs.gate.outputs.source_sha }}
+      - name: Verified stored-byte normal publication
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+          GITHUB_TOKEN: ${{ github.token }}
+          CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token }}
+        run: python packages/py/tools/release-publish.py crates --tag "$RELEASE_TAG" --artifacts "$RUNNER_TEMP/stored" --mode normal --package anbani-mcp
+
+  publish-crates-cli-bootstrap:
+    needs: [gate, prepare, publish-crates-core-bootstrap, publish-crates-core-normal, publish-crates-api-bootstrap, publish-crates-api-normal, publish-crates-spell-bootstrap, publish-crates-spell-normal, publish-crates-tui-bootstrap, publish-crates-tui-normal, publish-crates-mcp-bootstrap, publish-crates-mcp-normal]
+    if: >-
+      always() && !cancelled() && needs.prepare.result == 'success' &&
+      !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') &&
+      contains(needs.prepare.outputs.missing_files, '"package":"anbani-cli"') && contains(needs.prepare.outputs.bootstrap_required, '"package":"anbani-cli"')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    environment: crates-io-bootstrap
+    permissions: {contents: read, actions: read}
+    env:
+      RELEASE_DEADLINE_EPOCH: ${{ needs.prepare.outputs.deadline_epoch }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.gate.outputs.source_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with: {python-version: "3.12"}
+      - uses: actions/download-artifact@v7
+        with:
+          name: verified-stored
+          path: ${{ runner.temp }}/stored
+      - run: |
+          python packages/py/tools/rust-toolchain.py
+      - uses: actions/cache/restore@v6
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            packages/rs/target
+          key: release-cargo-${{ runner.os }}-${{ needs.gate.outputs.source_sha }}
+      - name: Verified stored-byte bootstrap publication
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+          GITHUB_TOKEN: ${{ github.token }}
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CRATES_IO_BOOTSTRAP_TOKEN }}
+        run: python packages/py/tools/release-publish.py crates --tag "$RELEASE_TAG" --artifacts "$RUNNER_TEMP/stored" --mode bootstrap --package anbani-cli
+
+  publish-crates-cli-normal:
+    needs: [gate, prepare, publish-crates-core-bootstrap, publish-crates-core-normal, publish-crates-api-bootstrap, publish-crates-api-normal, publish-crates-spell-bootstrap, publish-crates-spell-normal, publish-crates-tui-bootstrap, publish-crates-tui-normal, publish-crates-mcp-bootstrap, publish-crates-mcp-normal, publish-crates-cli-bootstrap]
+    if: >-
+      always() && !cancelled() && needs.prepare.result == 'success' &&
+      !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') &&
+      contains(needs.prepare.outputs.missing_files, '"package":"anbani-cli"') && !contains(needs.prepare.outputs.bootstrap_required, '"package":"anbani-cli"')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    environment: crates-io
+    permissions: {contents: read, actions: read, id-token: write}
+    env:
+      RELEASE_DEADLINE_EPOCH: ${{ needs.prepare.outputs.deadline_epoch }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.gate.outputs.source_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with: {python-version: "3.12"}
+      - uses: actions/download-artifact@v7
+        with:
+          name: verified-stored
+          path: ${{ runner.temp }}/stored
+      - run: |
+          python packages/py/tools/rust-toolchain.py
+      - uses: rust-lang/crates-io-auth-action@v1
+        id: auth
+      - uses: actions/cache/restore@v6
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            packages/rs/target
+          key: release-cargo-${{ runner.os }}-${{ needs.gate.outputs.source_sha }}
+      - name: Verified stored-byte normal publication
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+          GITHUB_TOKEN: ${{ github.token }}
+          CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token }}
+        run: python packages/py/tools/release-publish.py crates --tag "$RELEASE_TAG" --artifacts "$RUNNER_TEMP/stored" --mode normal --package anbani-cli
+
+  publish-pypi:
+    needs: [gate, prepare]
+    if: contains(needs.prepare.outputs.missing_files, '"registry":"pypi"')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    environment: pypi
+    permissions: {contents: read, actions: read, id-token: write}
+    env:
+      RELEASE_DEADLINE_EPOCH: ${{ needs.prepare.outputs.deadline_epoch }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.gate.outputs.source_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with: {python-version: "3.12"}
+      - uses: actions/download-artifact@v7
+        with:
+          name: verified-stored
+          path: ${{ runner.temp }}/stored
+      - id: stage
+        env: {RELEASE_TAG: "${{ github.ref_name }}", GITHUB_TOKEN: "${{ github.token }}"}
+        run: python packages/py/tools/release-publish.py pypi-stage --tag "$RELEASE_TAG" --artifacts "$RUNNER_TEMP/stored" --out "$RUNNER_TEMP/pypi-missing"
+      - uses: pypa/gh-action-pypi-publish@7245906fb61fa33a13554f9d5fb856fe61758086 # v1.14.3
+        id: upload
+        if: steps.stage.outputs.count != '0'
+        continue-on-error: true
+        with:
+          packages-dir: ${{ runner.temp }}/pypi-missing
+          skip-existing: false
+      - name: Re-probe accepted or uncertain action result without resending
+        if: always() && steps.stage.outcome == 'success'
+        env: {RELEASE_TAG: "${{ github.ref_name }}", GITHUB_TOKEN: "${{ github.token }}"}
+        run: python packages/py/tools/release-publish.py pypi-wait --tag "$RELEASE_TAG" --artifacts "$RUNNER_TEMP/stored"
+
+  finalize:
+    needs: [gate, prepare, publish-npm-platforms-bootstrap, publish-npm-platforms-normal, publish-npm-root-bootstrap, publish-npm-root-normal, publish-npm-wasm-bootstrap, publish-npm-wasm-normal, publish-crates-core-bootstrap, publish-crates-core-normal, publish-crates-api-bootstrap, publish-crates-api-normal, publish-crates-spell-bootstrap, publish-crates-spell-normal, publish-crates-tui-bootstrap, publish-crates-tui-normal, publish-crates-mcp-bootstrap, publish-crates-mcp-normal, publish-crates-cli-bootstrap, publish-crates-cli-normal, publish-pypi]
+    if: >-
+      always() && !cancelled() && needs.prepare.result == 'success' &&
+      !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    permissions: {contents: write, checks: read, actions: read}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.gate.outputs.source_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with: {python-version: "3.12"}
+      - uses: actions/setup-node@v7
+        with: {node-version: "24"}
+      - run: |
+          python packages/py/tools/rust-toolchain.py
+      - uses: actions/download-artifact@v7
+        with:
+          name: verified-stored
+          path: ${{ runner.temp }}/stored
+      - name: All registry digests, then fresh public consumer installs, then make draft public
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          python packages/py/tools/release.py verify --tag "$RELEASE_TAG" --artifacts "$RUNNER_TEMP/stored"
+          python packages/py/tools/release.py finalize --tag "$RELEASE_TAG"

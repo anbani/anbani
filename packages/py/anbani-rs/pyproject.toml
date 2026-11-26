@@ -1,0 +1,27 @@
+[build-system]
+requires = ["maturin>=1.7,<2"]
+build-backend = "maturin"
+
+[project]
+name = "anbani-rs"
+description = "Rust core of the anbani Georgian script and language toolkit"
+readme = "README.md"
+license = "GPL-3.0-or-later"
+requires-python = ">=3.9"
+dynamic = ["version"]
+
+[project.urls]
+Repository = "https://github.com/Anbani/anbani"
+Source = "https://github.com/Anbani/anbani/tree/main/packages/py/anbani-rs"
+Issues = "https://github.com/Anbani/anbani/issues"
+
+[tool.maturin]
+manifest-path = "../../rs/crates/anbani-py/Cargo.toml"
+module-name = "anbani_rs"
+features = ["pyo3/extension-module"]
+locked = true
+sdist-generator = "cargo"
+include = [
+    { path = "LICENSE", format = ["sdist", "wheel"] },
+    { path = "NOTICE", format = ["sdist", "wheel"] },
+]
