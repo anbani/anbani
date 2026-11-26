@@ -24,6 +24,23 @@ class SourceLockTests(unittest.TestCase):
             with self.subTest(changes=changes), self.assertRaisesRegex(ValueError, "package pin"):
                 archive.validate_lock_pruning(original, changed)
 
+class PackagedCrateCacheTests(unittest.TestCase):
+    def test_clears_target_package_and_extracted_overlay_crates_only(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            target, home = root / "target", root / "cargo"
+            stale = [target / "package/anbani-core-4.0.0/src", home / "registry/src/-45c442d404748be4/anbani-core-4.0.0",
+                     home / "registry/src/index.crates.io-1949cf8c6b5b557f/anbani-api-4.0.0",
+                     target / "debug/.fingerprint/anbani-core-384f38d65cb3c2ef", target / "release/.fingerprint/anbani-api-1"]
+            kept = [target / "release/deps", target / "debug/.fingerprint/serde-1",
+                    home / "registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.229",
+                    home / "registry/src/-45c442d404748be4/anbani-core-3.9.0", home / "registry/cache"]
+            for path in stale + kept:
+                path.mkdir(parents=True)
+            archive.clear_packaged_crates(target, home, ("anbani-core", "anbani-api"), "4.0.0")
+            self.assertEqual([p for p in stale if p.exists()], [])
+            self.assertEqual([p for p in kept if not p.exists()], [])
+
 class RelocatedSourceTests(unittest.TestCase):
 
     def test_native_python_staging_joins_sources_without_mutating_owners(self):

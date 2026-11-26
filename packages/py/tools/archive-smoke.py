@@ -343,8 +343,21 @@ def pure_python(artifacts, temporary):
     run([cli, "expand", "ვნახოთ ა. შ."], cwd=temporary, output="ვნახოთ ასე შემდეგ\n", timeout=60)
     run([cli, "convert", "ანბანი", "-f", "mkhedruli", "-t", "unknown"], cwd=temporary, expected=2, timeout=60)
 
+def clear_packaged_crates(target, cargo_home, crates, crate_version):
+    """Forget earlier `cargo package` output. Verification treats our packaged crates as registry crates, which cargo
+    keys by name and version alone: in `target/package`, in the registry source it extracts them into, and in the
+    build fingerprints. A cached copy of any would verify the next archives against old sources of the same version."""
+    shutil.rmtree(target / "package", ignore_errors=True)
+    for name in crates:
+        for extracted in (cargo_home / "registry" / "src").glob(f"*/{name}-{crate_version}"):
+            shutil.rmtree(extracted)
+        for fingerprint in target.glob(f"*/.fingerprint/{name}-*"):
+            shutil.rmtree(fingerprint)
+
 def rust(artifacts, temporary):
     run(["cargo", "fetch", "--locked"], timeout=900)
+    clear_packaged_crates(target_directory(), Path(os.environ.get("CARGO_HOME") or Path.home() / ".cargo"),
+                          CRATES, version())
     command = ["cargo", "package", "--locked"]
     for name in CRATES:
         command += ["-p", name]
