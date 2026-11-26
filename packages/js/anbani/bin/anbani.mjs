@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import anbani from "../src/anbani.mjs";
 
 const [cmd, ...rest] = process.argv.slice(2);

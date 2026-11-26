@@ -1,3 +1,4 @@
+#! /usr/bin/env node
 const textArt = require("../dist/TextArt.js")
 
 for (let key of textArt.keys){

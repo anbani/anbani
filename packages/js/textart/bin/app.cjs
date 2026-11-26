@@ -1,3 +1,4 @@
+#! /usr/bin/env node
 const generator = require("../dist/TextArt.js")
 
 let args = process.argv.slice(2)

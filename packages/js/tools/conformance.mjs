@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import { existsSync, readFileSync, statSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, join, resolve } from 'node:path';
